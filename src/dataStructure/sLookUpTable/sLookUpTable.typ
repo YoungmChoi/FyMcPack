@@ -55,6 +55,18 @@ contains
 
     procedure, pass, public :: getIntArray => getSLTableIntArray
 
+    procedure, pass, public :: getString => getSLTableString
+
+    procedure, pass, public :: getStringArray => getSLTableStringArray
+
+    procedure, pass, public :: getChar => getSLTableChar
+
+    procedure, pass, public :: getCharArray => getSLTableCharArray
+
+    procedure, pass, public :: getLogical => getSLTableLogical
+
+    procedure, pass, public :: getLogicalArray => getSLTableLogicalArray
+
     procedure, pass, public :: print => printSLTable
 
 End Type

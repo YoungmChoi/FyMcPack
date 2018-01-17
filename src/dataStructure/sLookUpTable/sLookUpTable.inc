@@ -47,7 +47,7 @@ subroutine pushSLTableRealArray(this, key, value)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    real, dimension(:), intent(in)        :: value
+    real, dimension(:), intent(in)    :: value
     real(rp), allocatable                 :: tmpValue(:)
     integer :: keyIndex
     logical :: isExist
@@ -88,7 +88,7 @@ subroutine pushSLTableRealRPArray(this, key, value)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    real(rp), allocatable, intent(in)     :: value(:)
+    real(rp), dimension(:), intent(in)    :: value
     integer :: keyIndex
     logical :: isExist
 
@@ -137,7 +137,7 @@ subroutine pushSLTableIntArray(this, key, value)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    integer, allocatable, intent(in)      :: value(:)
+    integer, dimension(:), intent(in)     :: value
     integer :: keyIndex
     logical :: isExist
 
@@ -185,7 +185,7 @@ subroutine pushSLTableCharArray(this, key, value)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    character(len=CHAR_LEN), allocatable, intent(in) :: value(:)
+    character(len=CHAR_LEN), dimension(:), intent(in) :: value
     integer :: keyIndex
     logical :: isExist
 
@@ -234,7 +234,7 @@ subroutine pushSLTableLogicalArray(this, key, value)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    logical, allocatable, intent(in) :: value(:)
+    logical, dimension(:), intent(in)     :: value
     integer :: keyIndex
     logical :: isExist
 
@@ -354,7 +354,7 @@ subroutine getSLTableRealArray(this, key, value)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    real(rp), allocatable, intent(out)        :: value(:)
+    real(rp), allocatable, intent(out)    :: value(:)
 
     integer :: keyIndex
     logical :: isExist
@@ -438,7 +438,7 @@ subroutine getSLTableIntArray(this, key, value)
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
     integer, allocatable, intent(out)     :: value(:)
-    real(rp), allocatable :: rValue(:)
+    real(rp), allocatable                 :: rValue(:)
     integer :: nData
     Call this%getRealArray(key, rValue)
     nData = sizeof(rValue) / sizeof(1.0_RP)
@@ -504,7 +504,7 @@ subroutine getSLTableStringArray(this, key, value, delims)
     logical :: isExist
     integer :: nData, idata
 
-    type(typString),allocatable     :: parsedString(:)
+    type(typString), allocatable          :: parsedString(:)
     integer :: nargs
 
     Call this%searchKeyIndex(key, keyIndex, isExist)
@@ -517,7 +517,7 @@ subroutine getSLTableStringArray(this, key, value, delims)
                 if (nData.eq.1) then
 
                     if (present(delims)) then
-                        Call parse(this%dataArray(keyIndex)%arrS(1),delims, value, nargs)
+                        Call parse(this%dataArray(keyIndex)%arrS(1), delims, value, nargs)
                     else
                         if (allocated(value)) deallocate(value)
                         allocate(value(1))
@@ -548,6 +548,54 @@ subroutine getSLTableStringArray(this, key, value, delims)
 
 end subroutine
 
+function getSLTableChar(this, key, ivar) result(value)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    integer, optional                     :: ivar
+    character(len=CHAR_LEN)               :: value
+    type(typString)                       :: tmpString
+    tmpString = this%getString(key, ivar)
+    value = tmpString%get()
+    Call tmpString%destroy()
+end function
+
+subroutine getSLTableCharArray(this, key, value, delims)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    character(len=*),optional             :: delims
+    character(len=CHAR_LEN), allocatable  :: value(:)
+
+    type(typString),allocatable           :: tmpString(:)
+    integer :: i, nArray
+
+    Call this%getStringArray(key, tmpString, delims)
+
+    if (sizeof(tmpString).gt.1) then
+        nArray = sizeof(tmpString) / sizeof(tmpString(1))
+        if (nArray.ge.1) then
+            allocate(value(nArray))
+            do i = 1, nArray
+                value(i) = tmpString(i)%get()
+            enddo
+
+            do i = 1, nArray
+                Call tmpString(i)%destroy()
+            enddo
+            deallocate(tmpString)
+        else
+            write(*,*)  "   [WARNING] getSLTableCharArray(key, value) array size is zero."
+            write(*,*)  "     key : ", trim(key)
+            if (present(delims)) write(*,*) "     delims : ", trim(delims)
+        end if
+    else
+        write(*,*)  "   [WARNING] getSLTableCharArray(key, value) array size is zero."
+        write(*,*)  "     key : ", trim(key)
+        if (present(delims)) write(*,*) "     delims : ", trim(delims)
+    end if
+
+end subroutine
 
 subroutine reallocateSLTable(this, tableSize)
     Implicit None
@@ -606,6 +654,94 @@ subroutine reallocateSLTable(this, tableSize)
     end if
 
 end subroutine
+
+
+function getSLTableLogical(this, key, ivar) result(value)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    integer, optional                     :: ivar
+    logical                               :: value
+
+    integer :: keyIndex
+    logical :: isExist
+    integer :: nData
+
+    Call this%searchKeyIndex(key, keyIndex, isExist)
+
+    if (isExist) then
+        nData = this%dataArray(keyIndex)%nData
+        if (nData.ge.1) then
+            if (this%dataArray(keyIndex)%isLog) then
+                if (present(ivar)) then
+                    if ((ivar.le.nData).and.(ivar.ge.1)) then
+                        value = this%dataArray(keyIndex)%arrL(ivar)
+                    else
+                        write(*,*) "    [ERROR] getSLTableLogical(key, ivar), key : ", trim(key)
+                        write(*,*) "            ivar is over than the size of array."
+                        write(*,*) "              ivar : ", ivar, " nArray : ", nData
+                        stop
+                    end if
+                else
+                    value = this%dataArray(keyIndex)%arrL(1)
+                end if
+            else
+                write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+                write(*,*) "            data is not logical type."
+                stop
+            end if
+        else
+            write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+            write(*,*) "            the size of data is zero."
+            stop
+        end if
+    else
+        call this%printSearchError(key)
+    end if
+
+end function
+
+subroutine getSLTableLogicalArray(this, key, value)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    logical, allocatable                  :: value(:)
+
+    integer :: keyIndex
+    logical :: isExist
+    integer :: nData, idata
+
+    type(typString), allocatable          :: parsedString(:)
+    integer :: nargs
+
+    Call this%searchKeyIndex(key, keyIndex, isExist)
+    if (isExist) then
+        nData = this%dataArray(keyIndex)%nData
+
+        if (nData.ge.1) then
+            if (this%dataArray(keyIndex)%isLog) then
+                !!!... Allocate Array
+                if (allocated(value)) deallocate(value)
+                allocate(value(nData))
+
+                value = this%dataArray(keyIndex)%arrL
+
+            else
+                write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
+                write(*,*) "            data is not logical type."
+                stop
+            end if
+        else
+            write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
+            write(*,*) "            the size of data is zero."
+            stop
+        end if
+    else
+        call this%printSearchError(key)
+    end if
+
+end subroutine
+
 
 subroutine destroySLTable(this)
     Implicit None

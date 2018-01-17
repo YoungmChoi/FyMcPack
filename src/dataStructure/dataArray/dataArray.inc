@@ -1,7 +1,7 @@
 Subroutine setDataArrayIntArray(this, array)
     Implicit None
     Class(typDataArray), intent(inout)  :: this
-    integer,allocatable, intent(in) :: array(:)
+    integer, dimension(:), intent(in) :: array
     integer :: nData
 
     Call this%destroy()
@@ -50,7 +50,7 @@ End Subroutine
 Subroutine setDataArrayRealArray(this, array)
     Implicit None
     Class(typDataArray), intent(inout)  :: this
-    real(rp),allocatable, intent(in) :: array(:)
+    real(rp), dimension(:), intent(in) :: array
     integer :: nData
 
     Call this%destroy()
@@ -112,7 +112,7 @@ Subroutine setDataArrayStringArray(this, nData, array)
     Implicit None
     Class(typDataArray), intent(inout)               :: this
     integer, intent(in)                              :: nData
-    type(typString), allocatable, intent(in)         :: array(:)
+    type(typString), dimension(:), intent(in)        :: array
     integer:: idata
 
     Call this%destroy()
@@ -150,7 +150,7 @@ End Subroutine
 Subroutine setDataArrayCharArray(this, array, isTrim)
     Implicit None
     Class(typDataArray), intent(inout)               :: this
-    Character(len=CHAR_LEN), allocatable, intent(in) :: array(:)
+    Character(len=CHAR_LEN), dimension(:), intent(in) :: array
     Character(len=CHAR_LEN)                          :: dummyChar
     Logical, optional :: isTrim
 
@@ -193,7 +193,7 @@ End Subroutine
 Subroutine setDataArrayLogicalArray(this, array)
     Implicit None
     Class(typDataArray), intent(inout)  :: this
-    logical,allocatable, intent(in)     :: array(:)
+    logical, dimension(:), intent(in)     :: array
     integer:: nData
     Call this%destroy()
     nData = sizeof(array) /sizeof(.FALSE.)
