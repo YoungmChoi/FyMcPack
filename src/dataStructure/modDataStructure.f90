@@ -35,6 +35,8 @@ private
 
     integer, parameter :: sLTableDefaultSize = 50
 
+    logical, parameter :: sLTableSearchErrrorStop = .TRUE.
+
 !!  Header Files ---------------------------------------------------- !!
 
     Include "string/string.typ"

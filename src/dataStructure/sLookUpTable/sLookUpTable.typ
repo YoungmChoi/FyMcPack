@@ -10,9 +10,11 @@ private
 
     logical :: strongSearch = .FALSE.
 
-    type(typString), allocatable :: keys(:)
+    type(typString), allocatable    :: keys(:)
 
     type(typDataArray), allocatable :: dataArray(:)
+
+    logical, allocatable            :: isKeyActive(:)
 
 contains
 
@@ -66,6 +68,10 @@ contains
     procedure, pass, public :: getLogical => getSLTableLogical
 
     procedure, pass, public :: getLogicalArray => getSLTableLogicalArray
+
+    procedure, pass, public :: delete  => deleteSLTableData
+
+    procedure, pass, public :: keyExist => keyExistSLTableData
 
     procedure, pass, public :: print => printSLTable
 

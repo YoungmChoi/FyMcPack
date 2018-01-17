@@ -5,6 +5,7 @@ subroutine initializeSLtable(this, tableSize, name, strongSearch)
     Character(len=*),optional :: name
     logical,optional :: strongSearch
 
+    this%nKey   = 0
     this%nTable = sLTableDefaultSize
 
     if (present(tableSize)) then
@@ -15,9 +16,9 @@ subroutine initializeSLtable(this, tableSize, name, strongSearch)
 
     allocate(this%keys(this%nTable))
     allocate(this%dataArray(this%nTable))
+    allocate(this%isKeyActive(this%nTable))
 
-    this%nKey   = 0
-    this%nTable = sLTableDefaultSize
+    this%isKeyActive = .FALSE.
 
     this%name = " "
     if (present(name)) then
@@ -80,6 +81,7 @@ subroutine pushSLTableRealRP(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -104,6 +106,7 @@ subroutine pushSLTableRealRPArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -129,6 +132,7 @@ subroutine pushSLTableInt(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -153,6 +157,7 @@ subroutine pushSLTableIntArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -177,6 +182,7 @@ subroutine pushSLTableChar(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -201,6 +207,7 @@ subroutine pushSLTableCharArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -226,6 +233,7 @@ subroutine pushSLTableLogical(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
@@ -250,24 +258,32 @@ subroutine pushSLTableLogicalArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
+        this%isKeyActive = .TRUE.
     end if
 
 end subroutine
 
-function getSLTableReal(this, key, ivar) result(value)
+subroutine getSLTableReal(this, key, value, ivar, isStop, isCorrect)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    integer,optional                      :: ivar
     real(RP)                              :: value
+
+    integer,optional                      :: ivar
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+
+    logical :: errStop, errCorrect
 
     integer :: keyIndex
     logical :: isExist
-
     integer :: nData, idata
-
     type(typString),allocatable     :: parsedString(:)
     integer :: nargs
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
 
     Call this%searchKeyIndex(key, keyIndex, isExist)
 
@@ -280,18 +296,18 @@ function getSLTableReal(this, key, ivar) result(value)
             if (this%dataArray(keyIndex)%isNum) then
 
                 if (present(ivar)) then
-                    write(*,*) nData, ivar
-
                     if ((ivar.le.nData).and.(ivar.ge.1)) then
                         value = this%dataArray(keyIndex)%arrR(ivar)
+                        errCorrect = .TRUE.
                     else
                         write(*,*) "    [ERROR] getSLTableString(key, ivar), key : ", trim(key)
                         write(*,*) "            ivar is over than the size of array."
                         write(*,*) "              ivar : ", ivar, " nArray : ", nData
-                        stop
+                        if (errStop) stop
                     end if
                 else
                     value = this%dataArray(keyIndex)%arrR(1)
+                    errCorrect = .TRUE.
                 end if
 
             else if (this%dataArray(keyIndex)%isStr) then
@@ -304,11 +320,12 @@ function getSLTableReal(this, key, ivar) result(value)
 
                         if (ivar.le.nargs) then
                             value = parsedString(ivar)%getReal()
+                            errCorrect = .TRUE.
                         else
                             write(*,*) "    [ERROR] getSLTableString(key, ivar), key : ", trim(key)
                             write(*,*) "            ivar is over than the size of array."
                             write(*,*) "              ivar : ", ivar, " nArray : ", nargs
-                            stop
+                            if (errStop) stop
                         end if
 
                         do idata = 1,nData
@@ -321,40 +338,49 @@ function getSLTableReal(this, key, ivar) result(value)
 
                         if ((ivar.le.nData).and.(ivar.ge.1)) then
                             value = this%dataArray(keyIndex)%arrS(ivar)%getReal()
+                            errCorrect = .TRUE.
                         else
                             write(*,*) "    [ERROR] getSLTableString(key, ivar), key : ", trim(key)
                             write(*,*) "            ivar is over than the size of array."
                             write(*,*) "              ivar : ", ivar, " nArray : ", nData
-                            stop
+                            if (errStop) stop
                         end if
 
                     end if
 
                 else
                     value = this%dataArray(keyIndex)%arrS(1)%getReal()
+                    errCorrect = .TRUE.
                 end if
 
             else
                 write(*,*) "    [ERROR] getSLTableReal, key : ", trim(key)
                 write(*,*) "            data is not number nor number type string."
-                stop
+                if (errStop) stop
             end if
         else
             write(*,*) "    [ERROR] getSLTableReal, key : ", trim(key)
             write(*,*) "            the size of data is zero."
-            stop
+            if (errStop) stop
         end if
     else
-        call this%printSearchError(key)
+        call this%printSearchError(key, errStop)
     end if
 
-end function
+    if (present(isCorrect)) isCorrect = errCorrect
 
-subroutine getSLTableRealArray(this, key, value)
+end subroutine
+
+subroutine getSLTableRealArray(this, key, value, isStop, isCorrect)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
     real(rp), allocatable, intent(out)    :: value(:)
+
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+
+    logical :: errStop, errCorrect
 
     integer :: keyIndex
     logical :: isExist
@@ -363,29 +389,30 @@ subroutine getSLTableRealArray(this, key, value)
     type(typString),allocatable     :: parsedString(:)
     integer :: nargs
 
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
+    !!!... Allocate Array
+    if (allocated(value)) deallocate(value)
 
     Call this%searchKeyIndex(key, keyIndex, isExist)
+
     if (isExist) then
         nData = this%dataArray(keyIndex)%nData
 
         if (nData.ge.1) then
             if (this%dataArray(keyIndex)%isNum) then
-
-                !!!... Allocate Array
-                if (allocated(value)) deallocate(value)
                 allocate(value(nData))
-
                 value = this%dataArray(keyIndex)%arrR
+                errCorrect = .TRUE.
 
             else if (this%dataArray(keyIndex)%isStr) then
-
                 if (nData.eq.1) then
 
                     Call parse(this%dataArray(keyIndex)%arrS(1)," ", parsedString, nargs)
                     nData = nargs
 
-                    !!!... Allocate Array
-                    if (allocated(value)) deallocate(value)
                     allocate(value(nData))
 
                     do idata = 1,nData
@@ -396,67 +423,148 @@ subroutine getSLTableRealArray(this, key, value)
                         Call parsedString(idata)%destroy()
                     enddo
 
-                    deallocate(parsedString)
+                    if (allocated(parsedString)) deallocate(parsedString)
+
+                    errCorrect = .TRUE.
                 else
 
                     !!!... Allocate Array
-                    if (allocated(value)) deallocate(value)
                     allocate(value(nData))
 
                     do idata = 1,nData
                         value(idata) = this%dataArray(keyIndex)%arrS(idata)%getReal()
                     enddo
+                    errCorrect = .TRUE.
                 end if
 
             else
                 write(*,*) "    [ERROR] getSLTableRealArray, key : ", trim(key)
                 write(*,*) "            data is not number nor number type string."
-                stop
+                if (errStop) stop
             end if
         else
             write(*,*) "    [ERROR] getSLTableRealArray, key : ", trim(key)
             write(*,*) "            the size of data is zero."
-            stop
+            if (errStop) stop
         end if
     else
-        call this%printSearchError(key)
+        call this%printSearchError(key, errStop)
     end if
+
+    if (present(isCorrect)) isCorrect = errCorrect
 
 end subroutine
 
-function getSLTableInt(this, key, ivar) result(value)
+subroutine getSLTableInt(this, key, value, ivar, isStop, isCorrect)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    integer,optional                      :: ivar
     integer                               :: value
-    value = int(this%getReal(key, ivar))
-end function
+    integer,optional                      :: ivar
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+    real(rp) :: rValue
+    logical :: errStop, errCorrect
 
-subroutine getSLTableIntArray(this, key, value)
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
+    Call this%getReal(key, rValue, ivar, .FALSE., errCorrect)
+
+    if (errStop.AND.(errCorrect.EQV..FALSE.)) then
+        write(*,*)  "   [ERROR] getSLTableInt(key, value). no number type."
+        write(*,*)  "     key : ", trim(key)
+        stop
+    end if
+
+    value = int(rValue)
+
+    if (present(isCorrect)) isCorrect = errCorrect
+
+end subroutine
+
+subroutine getSLTableIntArray(this, key, value, isStop, isCorrect)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
     integer, allocatable, intent(out)     :: value(:)
     real(rp), allocatable                 :: rValue(:)
+
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+
+    logical :: errStop, errCorrect
     integer :: nData
-    Call this%getRealArray(key, rValue)
-    nData = sizeof(rValue) / sizeof(1.0_RP)
+
+    integer :: keyIndex
+    logical :: isExist
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
     if (allocated(value)) deallocate(value)
-    allocate(value(nData))
-    value = int(rValue)
-    deallocate(rValue)
+    Call this%searchKeyIndex(key, keyIndex, isExist)
+
+    if (isExist) then
+
+        Call this%getRealArray(key, rValue, .FALSE., errCorrect)
+
+        if (errStop.AND.(errCorrect.EQV..FALSE.)) then
+            write(*,*)  "   [ERROR] getSLTableIntArray(key, value). no number type."
+            write(*,*)  "     key : ", trim(key)
+            stop
+        end if
+
+        errCorrect = .FALSE.
+
+        if (sizeof(rValue).gt.0) then
+            nData = sizeof(rValue) / sizeof(1.0_RP)
+            if (nData.ge.1) then
+                allocate(value(nData))
+                value = int(rValue)
+                errCorrect = .TRUE.
+            else
+                write(*,*) "    [ERROR] getSLTableReal, key : ", trim(key)
+                write(*,*) "            the size of data is zero."
+                stop
+            end if
+        else
+            write(*,*) "    [ERROR] getSLTableReal, key : ", trim(key)
+            write(*,*) "            the size of data is zero."
+            stop
+        end if
+
+        if (allocated(rValue)) deallocate(rValue)
+
+    else
+        Call this%printSearchError(key, errStop)
+    end if
+
+    if (present(isCorrect)) isCorrect = errCorrect
+
 end subroutine
 
-function getSLTableString(this, key, ivar) result(value)
+subroutine getSLTableString(this, key, value, ivar, isStop, isCorrect)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
+    type(typString),intent(out)           :: value
+
     integer, optional                     :: ivar
-    type(typString)                       :: value
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+
+    logical :: errStop, errCorrect
+
     integer :: keyIndex
     logical :: isExist
     integer :: nData
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
 
     Call this%searchKeyIndex(key, keyIndex, isExist)
 
@@ -467,111 +575,161 @@ function getSLTableString(this, key, ivar) result(value)
                 if (present(ivar)) then
                     if ((ivar.le.nData).and.(ivar.ge.1)) then
                         value = this%dataArray(keyIndex)%arrS(ivar)
+                        errCorrect = .TRUE.
                     else
                         write(*,*) "    [ERROR] getSLTableString(key, ivar), key : ", trim(key)
                         write(*,*) "            ivar is over than the size of array."
                         write(*,*) "              ivar : ", ivar, " nArray : ", nData
-                        stop
+                        if (errStop) stop
                     end if
                 else
                     value = this%dataArray(keyIndex)%arrS(1)
+                    errCorrect = .TRUE.
                 end if
             else
                 write(*,*) "    [ERROR] getSLTableString, key : ", trim(key)
                 write(*,*) "            data is not string type."
-                stop
+                if (errStop) stop
             end if
         else
             write(*,*) "    [ERROR] getSLTableReal, key : ", trim(key)
             write(*,*) "            the size of data is zero."
-            stop
+            if (errStop) stop
         end if
     else
-        call this%printSearchError(key)
+        call this%printSearchError(key, errStop)
     end if
 
-end function
+    if (present(isCorrect)) isCorrect = errCorrect
 
-subroutine getSLTableStringArray(this, key, value, delims)
+end subroutine
+
+subroutine getSLTableStringArray(this, key, value, isStop, isCorrect, delims)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
+
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+    logical :: errStop, errCorrect
+
     character(len=*),optional             :: delims
-
     type(typString), allocatable          :: value(:)
-
     integer :: keyIndex
     logical :: isExist
     integer :: nData, idata
-
     type(typString), allocatable          :: parsedString(:)
     integer :: nargs
 
+    !!!... Allocate Array
+    if (allocated(value)) deallocate(value)
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
     Call this%searchKeyIndex(key, keyIndex, isExist)
+
     if (isExist) then
         nData = this%dataArray(keyIndex)%nData
-
         if (nData.ge.1) then
             if (this%dataArray(keyIndex)%isStr) then
 
                 if (nData.eq.1) then
-
                     if (present(delims)) then
                         Call parse(this%dataArray(keyIndex)%arrS(1), delims, value, nargs)
                     else
-                        if (allocated(value)) deallocate(value)
                         allocate(value(1))
                         value = this%dataArray(keyIndex)%arrS(1)
                     end if
                 else
-                    !!!... Allocate Array
-                    if (allocated(value)) deallocate(value)
                     allocate(value(nData))
-
                     do idata = 1,nData
                         value(idata) = this%dataArray(keyIndex)%arrS(idata)
                     enddo
                 end if
+                errCorrect = .TRUE.
             else
                 write(*,*) "    [ERROR] getSLTableStringArray, key : ", trim(key)
                 write(*,*) "            data is not string type."
-                stop
+                if (errStop) stop
             end if
         else
             write(*,*) "    [ERROR] getSLTableStringArray, key : ", trim(key)
             write(*,*) "            the size of data is zero."
-            stop
+            if (errStop) stop
         end if
     else
-        call this%printSearchError(key)
+        call this%printSearchError(key, errStop)
     end if
+
+    if (present(isCorrect)) isCorrect = errCorrect
 
 end subroutine
 
-function getSLTableChar(this, key, ivar) result(value)
+subroutine getSLTableChar(this, key, value, ivar, isStop, isCorrect)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    integer, optional                     :: ivar
     character(len=CHAR_LEN)               :: value
+    integer, optional                     :: ivar
+
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+
+    logical                               :: errStop, errCorrect
     type(typString)                       :: tmpString
-    tmpString = this%getString(key, ivar)
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
+    Call this%getString(key, tmpString, ivar, .FALSE., errCorrect)
+
+    if (errStop.and.(errCorrect.EQV..FALSE.)) then
+        write(*,*)  "   [ERROR] getSLTableChar(key, value). no string type."
+        write(*,*)  "     key : ", trim(key)
+        stop
+    end if
+
     value = tmpString%get()
     Call tmpString%destroy()
-end function
 
-subroutine getSLTableCharArray(this, key, value, delims)
+    if (present(isCorrect)) isCorrect = errCorrect
+
+end subroutine
+
+subroutine getSLTableCharArray(this, key, value, isStop, isCorrect, delims)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     character(len=*), intent(in)          :: key
-    character(len=*),optional             :: delims
     character(len=CHAR_LEN), allocatable  :: value(:)
 
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+    character(len=*),optional             :: delims
+
+    logical                               :: errStop, errCorrect
     type(typString),allocatable           :: tmpString(:)
     integer :: i, nArray
 
-    Call this%getStringArray(key, tmpString, delims)
+    !!!... Allocate Array
+    if (allocated(value)) deallocate(value)
 
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
+    Call this%getStringArray(key, tmpString, .FALSE., errCorrect, delims)
+
+    if (errStop.and.(errCorrect.EQV..FALSE.)) then
+        write(*,*)  "   [ERROR] getSLTableCharArray(key, value). no string type."
+        write(*,*)  "     key : ", trim(key)
+        if (present(delims)) write(*,*) "     delims : ", trim(delims)
+        stop
+    end if
+
+    errCorrect = .FALSE.
     if (sizeof(tmpString).gt.1) then
         nArray = sizeof(tmpString) / sizeof(tmpString(1))
         if (nArray.ge.1) then
@@ -584,16 +742,313 @@ subroutine getSLTableCharArray(this, key, value, delims)
                 Call tmpString(i)%destroy()
             enddo
             deallocate(tmpString)
+            errCorrect = .TRUE.
         else
             write(*,*)  "   [WARNING] getSLTableCharArray(key, value) array size is zero."
             write(*,*)  "     key : ", trim(key)
             if (present(delims)) write(*,*) "     delims : ", trim(delims)
+            if (errStop) stop
         end if
     else
         write(*,*)  "   [WARNING] getSLTableCharArray(key, value) array size is zero."
         write(*,*)  "     key : ", trim(key)
         if (present(delims)) write(*,*) "     delims : ", trim(delims)
+        if (errStop) stop
     end if
+
+    if (present(isCorrect)) isCorrect = errCorrect
+
+end subroutine
+
+subroutine getSLTableLogical(this, key, value, ivar, isStop, isCorrect)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    logical,intent(out)                   :: value
+    integer, optional                     :: ivar
+
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+    logical                               :: errStop, errCorrect
+
+    integer :: keyIndex
+    logical :: isExist
+    integer :: nData, idata
+
+    type(typString), allocatable          :: parsedString(:)
+    integer :: nargs
+
+    type(typString)                       :: tmpString
+
+    Call this%searchKeyIndex(key, keyIndex, isExist)
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
+    if (isExist) then
+        nData = this%dataArray(keyIndex)%nData
+        if (nData.ge.1) then
+            if (this%dataArray(keyIndex)%isLog) then
+                if (present(ivar)) then
+                    if ((ivar.le.nData).and.(ivar.ge.1)) then
+                        value = this%dataArray(keyIndex)%arrL(ivar)
+                        errCorrect = .TRUE.
+                    else
+                        write(*,*) "    [ERROR] getSLTableLogical(key, ivar), key : ", trim(key)
+                        write(*,*) "            ivar is over than the size of array."
+                        write(*,*) "              ivar : ", ivar, " nArray : ", nData
+                        if (errStop) stop
+                    end if
+                else
+                    value = this%dataArray(keyIndex)%arrL(1)
+                    errCorrect = .TRUE.
+                end if
+            else if (this%dataArray(keyIndex)%isStr) then
+
+                if (nData.eq.1) then
+
+                    Call parse(this%dataArray(keyIndex)%arrS(1)," ", parsedString, nargs)
+
+                    if (nargs.ge.1) then
+
+                        if (present(ivar)) then
+                            if ( isStringEqual(parsedString(ivar), "true", .FALSE.) ) then
+                                value = .TRUE.
+                            else if ( isStringEqual(parsedString(ivar), "t", .FALSE.) ) then
+                                value = .TRUE.
+                            else if ( isStringEqual(parsedString(ivar), "false", .FALSE.) ) then
+                                value = .FALSE.
+                            else if ( isStringEqual(parsedString(ivar), "f", .FALSE.) ) then
+                                value = .FALSE.
+                            else
+                                write(*,*) "    [ERROR] getSLTableLogical, key, idata : ", trim(key), idata
+                                write(*,*) "            converting error (string to logical) : ", parsedString(idata)%get()
+                                if (errStop) stop
+                            end if
+                        else
+                            if ( isStringEqual(parsedString(1), "true", .FALSE.) ) then
+                                value = .TRUE.
+                            else if ( isStringEqual(parsedString(1), "t", .FALSE.) ) then
+                                value = .TRUE.
+                            else if ( isStringEqual(parsedString(1), "false", .FALSE.) ) then
+                                value = .FALSE.
+                            else if ( isStringEqual(parsedString(1), "f", .FALSE.) ) then
+                                value = .FALSE.
+                            else
+                                write(*,*) "    [ERROR] getSLTableLogical, key, idata : ", trim(key), idata
+                                write(*,*) "            converting error (string to logical) : ", parsedString(idata)%get()
+                                if (errStop) stop
+                            end if
+                        end if
+
+                    else
+                        write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+                        write(*,*) "            string is not parsed with space."
+                        if (errStop) stop
+                    end if
+
+                    do idata = 1, nData
+                        Call parsedString(idata)%destroy()
+                    enddo
+                    if (allocated(parsedString)) deallocate(parsedString)
+
+                else
+
+                    if (present(ivar)) then
+
+                        if ((ivar.le.nData).and.(ivar.ge.1)) then
+
+                            tmpString = this%dataArray(keyIndex)%arrS(ivar)
+
+                            if ( isStringEqual(tmpString, "true", .FALSE.) ) then
+                                value = .TRUE.
+                                errCorrect = .TRUE.
+                            else if ( isStringEqual(tmpString, "t", .FALSE.) ) then
+                                value = .TRUE.
+                                errCorrect = .TRUE.
+                            else if ( isStringEqual(tmpString, "false", .FALSE.) ) then
+                                value = .FALSE.
+                                errCorrect = .TRUE.
+                            else if ( isStringEqual(tmpString, "f", .FALSE.) ) then
+                                value = .FALSE.
+                                errCorrect = .TRUE.
+                            else
+                                write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+                                write(*,*) "            data is not logical type."
+                                if (errStop) stop
+                            end if
+
+                            Call tmpString%destroy()
+
+                        else
+                            write(*,*) "    [ERROR] getSLTableLogical(key, ivar), key : ", trim(key)
+                            write(*,*) "            ivar is over than the size of array."
+                            write(*,*) "              ivar : ", ivar, " nArray : ", nData
+                            if (errStop) stop
+                        end if
+                    else
+
+                        tmpString = this%dataArray(keyIndex)%arrS(1)
+
+                        if ( isStringEqual(tmpString, "true", .FALSE.) ) then
+                            value = .TRUE.
+                            errCorrect = .TRUE.
+                        else if ( isStringEqual(tmpString, "t", .FALSE.) ) then
+                            value = .TRUE.
+                            errCorrect = .TRUE.
+                        else if ( isStringEqual(tmpString, "false", .FALSE.) ) then
+                            value = .FALSE.
+                            errCorrect = .TRUE.
+                        else if ( isStringEqual(tmpString, "f", .FALSE.) ) then
+                            value = .FALSE.
+                            errCorrect = .TRUE.
+                        else
+                            write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+                            write(*,*) "            data is not logical type.", tmpString%get()
+                            if (errStop) stop
+                        end if
+
+                        Call tmpString%destroy()
+
+                    end if
+
+                end if
+
+            else
+                write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+                write(*,*) "            data is not logical type."
+                if (errStop) stop
+            end if
+        else
+            write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
+            write(*,*) "            the size of data is zero."
+            if (errStop) stop
+        end if
+    else
+        call this%printSearchError(key, errStop)
+    end if
+
+    if (present(isCorrect)) isCorrect = errCorrect
+
+end subroutine
+
+subroutine getSLTableLogicalArray(this, key, value, isStop, isCorrect)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    logical, allocatable                  :: value(:)
+
+    logical, intent(in), optional         :: isStop
+    logical, intent(out), optional        :: isCorrect
+    logical                               :: errStop, errCorrect
+
+    integer :: keyIndex
+    logical :: isExist
+    integer :: nData, idata
+
+    type(typString), allocatable          :: parsedString(:)
+    integer :: nargs
+
+    logical :: subLoopError
+
+    Call this%searchKeyIndex(key, keyIndex, isExist)
+
+    errCorrect = .FALSE.
+    errStop = sLTableSearchErrrorStop
+    if (present(isStop)) errStop = isStop
+
+    if (allocated(value)) deallocate(value)
+    if (isExist) then
+        nData = this%dataArray(keyIndex)%nData
+
+        if (nData.ge.1) then
+            if (this%dataArray(keyIndex)%isLog) then
+                !!!... Allocate Array
+                allocate(value(nData))
+                value = this%dataArray(keyIndex)%arrL
+
+                errCorrect = .TRUE.
+
+            else if (this%dataArray(keyIndex)%isStr) then
+
+                if (nData.eq.1) then
+                    Call parse(this%dataArray(keyIndex)%arrS(1)," ", parsedString, nargs)
+                    if (nargs.ge.1) then
+                        nData = nargs
+                        allocate(value(nData))
+
+                        subLoopError = .TRUE.
+                        do idata = 1, nData
+                            if ( isStringEqual(parsedString(idata), "true", .FALSE.) ) then
+                                value(idata) = .TRUE.
+                            else if ( isStringEqual(parsedString(idata), "t", .FALSE.) ) then
+                                value(idata) = .TRUE.
+                            else if ( isStringEqual(parsedString(idata), "false", .FALSE.) ) then
+                                value(idata) = .FALSE.
+                            else if ( isStringEqual(parsedString(idata), "f", .FALSE.) ) then
+                                value(idata) = .FALSE.
+                            else
+                                subLoopError = .FALSE.
+                                write(*,*) "    [ERROR] getSLTableLogical, key, idata : ", trim(key), idata
+                                write(*,*) "            converting error (string to logical) : ", parsedString(idata)%get()
+                                if (errStop) stop
+                            end if
+                        enddo
+
+                        do idata = 1, nData
+                            Call parsedString(idata)%destroy()
+                        enddo
+                        deallocate(parsedString)
+
+                        if (subLoopError) errCorrect = .TRUE.
+
+                    else
+                        write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
+                        write(*,*) "            string is not parsed with space."
+                        if (errStop) stop
+                    end if
+                else
+                    allocate(value(nData))
+                    subLoopError = .TRUE.
+
+                    do idata = 1, nData
+
+                        if ( isStringEqual(this%dataArray(keyIndex)%arrS(idata), "true", .FALSE.) ) then
+                            value(idata) = .TRUE.
+                        else if ( isStringEqual(this%dataArray(keyIndex)%arrS(idata), "t", .FALSE.) ) then
+                            value(idata) = .TRUE.
+                        else if ( isStringEqual(this%dataArray(keyIndex)%arrS(idata), "false", .FALSE.) ) then
+                            value(idata) = .FALSE.
+                        else if ( isStringEqual(this%dataArray(keyIndex)%arrS(idata), "f", .FALSE.) ) then
+                            value(idata) = .FALSE.
+                        else
+                            subLoopError = .FALSE.
+                            write(*,*) "    [ERROR] getSLTableLogical, key, idata : ", trim(key), idata
+                            write(*,*) "            converting error (string to logical) : ", parsedString(idata)%get()
+                            if (errStop) stop
+                        end if
+                    enddo
+
+                    if (subLoopError) errCorrect = .TRUE.
+
+                end if
+
+            else
+                write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
+                write(*,*) "            data is not logical type."
+                if (errStop) stop
+            end if
+        else
+            write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
+            write(*,*) "            the size of data is zero."
+            if (errStop) stop
+        end if
+    else
+        call this%printSearchError(key, errStop)
+    end if
+
+    if (present(isCorrect)) isCorrect = errCorrect
 
 end subroutine
 
@@ -605,8 +1060,10 @@ subroutine reallocateSLTable(this, tableSize)
     !! Local Variables
     type(typString), allocatable          :: tmpKeys(:)
     type(typDataArray), allocatable       :: tmpDataArray(:)
+    logical, allocatable                  :: tmpisKeyActive(:)
     integer :: ikey
     integer :: tmpNKey, tmpNTable
+
 
     if (tableSize.eq.0) then
         !!... destroy dynamic array
@@ -616,6 +1073,9 @@ subroutine reallocateSLTable(this, tableSize)
 
         allocate(tmpKeys(tableSize))
         allocate(tmpDataArray(tableSize))
+        allocate(tmpisKeyActive(tableSize))
+
+        tmpisKeyActive(:) = .FALSE.
 
         tmpNKey = this%nKey
 
@@ -628,12 +1088,14 @@ subroutine reallocateSLTable(this, tableSize)
             do ikey = 1, tableSize
                 tmpKeys(ikey)      = this%keys(ikey)
                 tmpDataArray(ikey) = this%dataArray(ikey)
+                tmpisKeyActive(ikey) = this%isKeyActive(ikey)
             end do
         else
 
             do ikey = 1, this%nTable
                 tmpKeys(ikey)      = this%keys(ikey)
                 tmpDataArray(ikey) = this%dataArray(ikey)
+                tmpisKeyActive(ikey) = this%isKeyActive(ikey)
             end do
 
         end if
@@ -645,119 +1107,17 @@ subroutine reallocateSLTable(this, tableSize)
 
         allocate(this%keys(this%nTable))
         allocate(this%dataArray(this%nTable))
+        allocate(this%isKeyActive(this%nTable))
+
+        this%isKeyActive = .FALSE.
 
         do ikey = 1, this%nTable
-            this%keys(ikey)      = tmpKeys(ikey)
-            this%dataArray(ikey) = tmpDataArray(ikey)
+            this%keys(ikey)        = tmpKeys(ikey)
+            this%dataArray(ikey)   = tmpDataArray(ikey)
+            this%isKeyActive(ikey) = tmpisKeyActive(ikey)
         end do
 
     end if
-
-end subroutine
-
-
-function getSLTableLogical(this, key, ivar) result(value)
-    Implicit None
-    class(typSLookUpTable), intent(inout) :: this
-    character(len=*), intent(in)          :: key
-    integer, optional                     :: ivar
-    logical                               :: value
-
-    integer :: keyIndex
-    logical :: isExist
-    integer :: nData
-
-    Call this%searchKeyIndex(key, keyIndex, isExist)
-
-    if (isExist) then
-        nData = this%dataArray(keyIndex)%nData
-        if (nData.ge.1) then
-            if (this%dataArray(keyIndex)%isLog) then
-                if (present(ivar)) then
-                    if ((ivar.le.nData).and.(ivar.ge.1)) then
-                        value = this%dataArray(keyIndex)%arrL(ivar)
-                    else
-                        write(*,*) "    [ERROR] getSLTableLogical(key, ivar), key : ", trim(key)
-                        write(*,*) "            ivar is over than the size of array."
-                        write(*,*) "              ivar : ", ivar, " nArray : ", nData
-                        stop
-                    end if
-                else
-                    value = this%dataArray(keyIndex)%arrL(1)
-                end if
-            else
-                write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
-                write(*,*) "            data is not logical type."
-                stop
-            end if
-        else
-            write(*,*) "    [ERROR] getSLTableLogical, key : ", trim(key)
-            write(*,*) "            the size of data is zero."
-            stop
-        end if
-    else
-        call this%printSearchError(key)
-    end if
-
-end function
-
-subroutine getSLTableLogicalArray(this, key, value)
-    Implicit None
-    class(typSLookUpTable), intent(inout) :: this
-    character(len=*), intent(in)          :: key
-    logical, allocatable                  :: value(:)
-
-    integer :: keyIndex
-    logical :: isExist
-    integer :: nData, idata
-
-    type(typString), allocatable          :: parsedString(:)
-    integer :: nargs
-
-    Call this%searchKeyIndex(key, keyIndex, isExist)
-    if (isExist) then
-        nData = this%dataArray(keyIndex)%nData
-
-        if (nData.ge.1) then
-            if (this%dataArray(keyIndex)%isLog) then
-                !!!... Allocate Array
-                if (allocated(value)) deallocate(value)
-                allocate(value(nData))
-
-                value = this%dataArray(keyIndex)%arrL
-
-            else
-                write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
-                write(*,*) "            data is not logical type."
-                stop
-            end if
-        else
-            write(*,*) "    [ERROR] getSLTableLogicalArray, key : ", trim(key)
-            write(*,*) "            the size of data is zero."
-            stop
-        end if
-    else
-        call this%printSearchError(key)
-    end if
-
-end subroutine
-
-
-subroutine destroySLTable(this)
-    Implicit None
-    class(typSLookUpTable), intent(inout) :: this
-    integer :: ikey
-
-    do ikey = 1, this%nTable
-        Call this%keys(ikey)%destroy()
-        Call this%dataArray(ikey)%destroy()
-    end do
-
-    if (allocated(this%keys)) deallocate(this%keys)
-    if (allocated(this%dataArray)) deallocate(this%dataArray)
-
-    this%nKey   = 0
-    this%nTable = 0
 
 end subroutine
 
@@ -859,6 +1219,52 @@ subroutine printSLTable(this)
 
 end subroutine
 
+subroutine destroySLTable(this)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    integer :: ikey
+
+    do ikey = 1, this%nTable
+        Call this%keys(ikey)%destroy()
+        Call this%dataArray(ikey)%destroy()
+    end do
+
+    if (allocated(this%keys))        deallocate(this%keys)
+    if (allocated(this%dataArray))   deallocate(this%dataArray)
+    if (allocated(this%isKeyActive)) deallocate(this%isKeyActive)
+
+    this%nKey   = 0
+    this%nTable = 0
+
+end subroutine
+
+subroutine deleteSLTableData(this, key)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+
+    integer :: keyIndex
+    logical :: isExist
+
+    Call this%searchKeyIndex(key, keyIndex, isExist)
+
+    if (isExist) then
+        this%isKeyActive(keyIndex) = .FALSE.
+        Call this%keys(keyIndex)%destroy()
+        Call this%dataArray(keyIndex)%destroy()
+    endif
+
+end subroutine
+
+function keyExistSLTableData(this, key) result(isExist)
+    Implicit None
+    class(typSLookUpTable), intent(inout) :: this
+    character(len=*), intent(in)          :: key
+    logical                               :: isExist
+    integer                               :: keyIndex
+    Call searchKeyIndex(this, key, keyIndex, isExist)
+end function
+
 subroutine searchKeyIndex(this, key, keyIndex, isExist)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
@@ -871,9 +1277,11 @@ subroutine searchKeyIndex(this, key, keyIndex, isExist)
     !!... Optimization is needed !!!
     isExist = .FALSE.
     do ikey = 1, this%nKey
-        if (isStringEqual(trim(key), this%keys(ikey), this%strongSearch)) then
-            isExist = .TRUE.
-            keyIndex = ikey
+        if (this%isKeyActive(ikey)) then    !! Acceletate Search
+            if (isStringEqual(trim(key), this%keys(ikey), this%strongSearch)) then
+                isExist = .TRUE.
+                keyIndex = ikey
+            end if
         end if
     enddo
 
@@ -883,9 +1291,21 @@ subroutine searchKeyIndex(this, key, keyIndex, isExist)
 
 end subroutine
 
-subroutine printSearchError(this, key)
+subroutine printSearchError(this, key, errStop)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     Character(len=*), intent(in) :: key
-    write(*,*) " Unknown Key : ", key, " in LookUpTable ", trim(this%name)
+    logical,optional :: errStop
+
+    if (present(errStop)) then
+        if (errStop.EQV..TRUE.) then
+        write(*,*) "   [ERROR]   Unknown Key : ", key, " in LookUpTable ", trim(this%name)
+        stop
+        else
+        write(*,*) "   [WARNING] Unknown Key : ", key, " in LookUpTable ", trim(this%name)
+        end if
+    else
+        write(*,*) "   [WARNING] Unknown Key : ", key, " in LookUpTable ", trim(this%name)
+    end if
+
 end subroutine
