@@ -4,10 +4,11 @@ Subroutine setString(this, string, isTrim)
     Character(len=*), intent(in) :: string
     logical,optional :: isTrim
     integer :: nChar
+    character(len=len_trim(string)) tmpString
 
+    tmpString = string
     this%str_ = ""
-
-    nChar = sizeof(string)/ sizeof("a")
+    nChar = sizeof(tmpString)/ sizeof("a")
 
     if (nChar.gt.strMaxLength) then
         write(*,*) "    [WARNING] setString(string), string is longer than strMaxLength."
@@ -20,7 +21,8 @@ Subroutine setString(this, string, isTrim)
     if (present(isTrim)) then
         if (isTrim) then
             this%str_ = ""
-            nChar = sizeof(trim(string))/ sizeof("a")
+            Call compactChar(tmpString)
+            nChar = len_trim(tmpString)
             this%nStr_ = nChar
             this%str_(1:this%nStr_) = trim(string)
         end if
@@ -37,7 +39,7 @@ End Subroutine
 
 function getString(this) result(string)
     Implicit None
-    class(typString), intent(inout) :: this
+    class(typString), intent(in) :: this
     character(len=this%nStr_) :: string
     string = this%str_(1:this%nStr_)
 End function
@@ -53,7 +55,7 @@ function getStringLower(this) result(string)
     !
     !   Modified by Y.M Choi
     !
-    class(typString), intent(inout) :: this
+    class(typString), intent(in) :: this
     character(len=this%nStr_)       :: string
     CHARACTER          :: ch
     INTEGER,PARAMETER  :: DUC = ICHAR('A') - ICHAR('a')
@@ -76,7 +78,7 @@ function getStringUpper(this)  RESULT (string)
     !
     !   Modified by Y.M Choi
     !
-    class(typString), intent(inout) :: this
+    class(typString), intent(in) :: this
     character(len=this%nStr_)       :: string
     CHARACTER          :: ch
     INTEGER,PARAMETER  :: DUC = ICHAR('A') - ICHAR('a')
@@ -139,7 +141,7 @@ end function
 
 subroutine parseStringString(this, delims, args, nargs)
     Implicit None
-    class(typString), intent(inout) :: this
+    class(typString), intent(in) :: this
     character(len=*)                :: delims
     type(typString),allocatable     :: args(:)
     integer, intent(out)            :: nargs
@@ -160,7 +162,7 @@ end subroutine
 
 subroutine parseStringChar(this, delims, args, nargs)
     Implicit None
-    class(typString), intent(inout) :: this
+    class(typString), intent(in) :: this
     character(len=*)                :: delims
     character(len=*),allocatable    :: args(:)
     integer, intent(out)            :: nargs
@@ -192,6 +194,38 @@ subroutine parseCharString(str, delims, args, nargs)
 end subroutine
 
 subroutine parseCharChar(str, delims, args, nargs)
+    Implicit None
+    character(len=*) :: str,delims
+    character(len=*),allocatable :: args(:)
+    integer, intent(out)         :: nargs
+    !! .. Local Variables
+    integer :: nDelims
+    integer :: idel, j
+    !!
+    character(len=2*len_trim(str)) :: tmpStr
+
+    tmpStr = ""
+    tmpStr = str
+
+    nDelims = len_trim(delims)
+    if (nDelims.ge.1) then
+        do idel = 1, nDelims
+            Call parseCharCharOne(tmpStr, delims(idel:idel), args, nargs)
+
+            tmpStr = ""
+            do j = 1, nargs
+                tmpStr = trim(tmpStr)//" "//trim(args(j))
+            enddo
+        enddo
+        Call parseCharCharOne(tmpStr, " ", args, nargs)
+    else
+        write(*,*) "    [ERROR] parseCharChar(str, delims). no delims."
+        stop
+    end if
+
+endSubroutine
+
+subroutine parseCharCharOne(str, delims, args, nargs)
     !
     !  Dr. George Benthiem's string subroutine
     !
@@ -477,6 +511,43 @@ function getStringReal(this) result(value)
     end if
 end function
 
+function replaceString(str, text, replaceText) result(repStr)
+    implicit none
+    type(typString), intent(in)  :: str
+    character(len=*), intent(in) :: text, replaceText
+    type(typString) :: repStr
+    Call repStr%set(replaceChar(str%get(), text, replaceText))
+end function
+
+function replaceChar(str, text, replaceText) result(repStr)
+Implicit None
+    character(len=*), intent(in)   :: str, text, replaceText
+    character(len=2*len_trim(str) + 100 ) :: repStr
+    integer :: nStr, nText, nRep
+    integer,allocatable :: repIndex(:)
+    integer :: i, nReplace, irep
+
+    nStr   = len_trim(str)
+    nText  = len(text)
+    nRep   = len(replaceText)
+
+    allocate(repIndex(nStr))
+    repIndex = 0
+
+    nReplace = 0
+    do i = 1, nStr - nText + 1
+        if ( isStringEqual(str(i:i+nText-1), text) ) then
+            nReplace = nReplace + 1
+            repIndex(nReplace) = i
+        end if
+    enddo
+    repStr = str
+    do i = 1, nReplace
+        irep = repIndex(i) + (i-1) * (nRep-nText)
+        repStr = repStr(:irep-1) // replaceText(:nRep) // repStr(irep+nText:)
+    enddo
+end function
+
 subroutine copyString(origin, target)
 Implicit None
     Class(typString), intent(inout) :: origin
@@ -486,3 +557,192 @@ Implicit None
     origin%str_  = target%str_
 
 end subroutine
+
+subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag, iflag)
+!!----------------------------------------------------------------------------------
+!!
+!!  Split character line to character, integer, real argument by space (' ')
+!!
+!!  YoungMyung Choi, Ecole Centrale de Nantes
+!!
+!!----------------------------------------------------------------------------------
+!!  Input
+!!      tLine : Character Line
+!!
+!!  Output
+!!      nArg     : Number of Argument (if nArg = 0, no Argument)
+!!      cArg     : Character argument array, cArg(nArg)
+!!      scArg    : Lower character argument array, cArg(nArg)
+!!      lcArg    : Upper character argument array, cArg(nArg)
+!!      iArg     : Integer   argument array, iArg(nArg)
+!!      rArg     : Real      argument array, rArg(nArg)
+!!      numFlag  : Logical numeric data argument :, numFlag(nArg)
+!!                 if given argument if numeric data, numFlag is .TRUE.
+!!      iflag    : Check given tLine is blank line (if blank, iflag = .FALSE.)
+!!----------------------------------------------------------------------------------
+    implicit none
+    character(len=*), intent(inout) :: str
+    integer, intent(inout) :: nArg
+    character(len = CHAR_LEN), allocatable, intent(inout) :: cArg(:), scArg(:), lcArg(:)
+    integer, allocatable, intent(inout)                       :: iArg(:)
+    real(RP), allocatable, intent(inout)                      :: rArg(:)
+    logical,allocatable, intent(inout)                        :: numFlag(:)
+    integer,allocatable, intent(inout)                        :: scFlag(:)
+    logical, intent(out) :: iflag
+    !----------------------------------------------------
+    integer :: i, io
+    character(len=CHAR_LEN), allocatable :: args(:)
+    character(len=CHAR_LEN)              :: dummyChar
+    type(typString)                      :: dummyStr
+    real :: dummyReal
+    character(len = 1)                   :: tmpOneC
+
+    iflag = .TRUE.
+    call parse(str,' ', args, nArg)
+    if (nArg.eq.0) then
+        nArg  = 0
+        iflag = .FALSE.
+        return
+    end if
+    if (allocated(cArg))    deallocate(cArg)
+    if (allocated(scArg))   deallocate(scArg)
+    if (allocated(lcArg))   deallocate(lcArg)
+    if (allocated(iArg))    deallocate(iArg)
+    if (allocated(rArg))    deallocate(rArg)
+    if (allocated(numFlag)) deallocate(numFlag)
+    if (allocated(scFlag))  deallocate(scFlag)
+
+    allocate(cArg(nArg), scArg(nArg), lcArg(nArg), iArg(nArg), rArg(nArg), numFlag(nArg), scFlag(nArg))
+    iArg    = 0
+    rArg    = 0.0
+    scFlag  = -1
+    numFlag = .FALSE.
+
+    do i = 1, nArg
+        dummyChar = trim(args(i))
+
+        Call compactChar(dummyChar)
+        Call dummyStr%set(dummyChar,.TRUE.)
+
+        cArg(i)  = dummyStr%get()
+        scArg(i) = dummyStr%getLower()
+        lcArg(i) = dummyStr%getUpper()
+        read(dummyChar, *, iostat = io) dummyReal
+        rArg(i) = dummyReal
+        iArg(i) = int(rArg(i))
+        if (io.eq.0) numFlag(i) = .TRUE.
+
+    end do
+
+    Call dummyStr%destroy()
+
+end subroutine
+
+function stringHeader(this) result(value)
+    class(typString), intent(in) :: this
+    integer                      :: value
+    !!... Local Variable
+    character(len=CHAR_LEN)      :: tmpChar
+
+    tmpChar = this%get()
+    value = charHeader(tmpChar)
+
+end function
+
+function charHeader(this) result(value)
+    character(len=CHAR_LEN), intent(in) :: this
+    integer                             :: value
+    !!... Local Variable
+    character(len=CHAR_LEN) :: tmpChar
+    character(len=1) :: oneH
+    integer :: nStr
+
+    value = -1
+
+    tmpChar = trim(this)
+    Call compactChar(tmpChar)
+
+    nStr = sizeof(tmpChar)/sizeof("a")
+    if (nStr.ge.1) then
+        oneH = tmpChar(1:1)
+    end if
+
+    if (nStr.ge.2) then
+        value = testOneCharHead(oneH)
+        if ( isStringEqual(tmpChar(1:2),"/*") ) value = 11
+        if ( isStringEqual(tmpChar(1:2),"*/") ) value = 12
+    else if (nStr.eq.1) then
+        value = testOneCharHead(oneH)
+    end if
+
+end function
+
+function findStringLineEnd(line) result(value)
+    implicit none
+    type(typString), intent(in) :: line
+    integer :: value
+    value = findCharLineEnd(line%get())
+end function
+
+function findCharLineEnd(line) result(value)
+    implicit None
+    character(len=*), intent(in) :: line
+    character(len=len_trim(line)) :: tmpLine
+    integer :: value
+    integer :: nStr, i
+    tmpLine = line
+    Call compactChar(tmpLine)
+    nStr  = sizeof(tmpLine)/sizeof("a")
+    value = -1
+    if (nStr.ge.1) then
+        do i = 1,nStr
+            if (isStringEqual(line(i:i),";")) then
+                value = i
+                exit
+            end if
+        enddo
+    end if
+end
+
+function testOneChar(oneChar) result(value)
+    implicit None
+    character(len=1), intent(in) :: oneChar
+    integer                      :: value
+
+    value = 0
+
+    if ( isStringEqual(oneChar,";") ) value = 2
+
+    if ( isStringEqual(oneChar,"$") ) value = 3
+
+    if ( isStringEqual(oneChar,"{") ) then
+        value = 21
+    else if ( isStringEqual(oneChar,"}") ) then
+        value = 22
+    else if ( isStringEqual(oneChar,"(") ) then
+        value = 31
+    else if ( isStringEqual(oneChar,")") ) then
+        value = 32
+    else if ( isStringEqual(oneChar,"[") ) then
+        value = 41
+    else if ( isStringEqual(oneChar,"]") ) then
+        value = 42
+    end if
+
+end function
+
+function testOneCharHead(oneChar) result(value)
+    implicit None
+    character(len=1), intent(in) :: oneChar
+    integer                      :: value
+    integer :: i
+    value = testOneChar(oneChar)
+    if (value.eq.0) then
+        do i = 1, nCommentCharList
+            if (isStringEqual(oneChar,commentCharList(i:i))) then
+                value = 1
+                exit
+            end if
+        enddo
+    end if
+end function

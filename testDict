@@ -1,0 +1,36 @@
+
+
+varR    1.0;
+
+varI    2;
+
+arrR    
+( 
+    11    
+    12   
+    13  
+);
+
+arrI  ( 123 256 486 );
+
+arrL  ( true false t f );
+
+arrS  ( string1 string2 );
+
+dict1
+{
+    abc    waveType;
+    def    jonswap;
+
+}
+
+dict2
+{
+    $dict1
+    
+    abc     currentType;
+    ghk     what;
+}
+
+
+

@@ -45,7 +45,11 @@ private
 
     Include "sLookUpTable/sLookUpTable.typ"
 
-    public :: testDataArray, testString, testSLTable
+    Include "dictionary/dictionary.typ"
+
+    Include "dictionary/dictDataBase.typ"
+
+    public :: testDataArray, testString, testSLTable, testDictionary
 
 Contains
 
@@ -57,6 +61,10 @@ Contains
 
     Include "sLookUpTable/sLookUpTable.inc"
 
+    Include "dictionary/dictionary.inc"
+
+    Include "dictionary/dictDataBase.inc"
+
 !!  Subroutine Test Script ------------------------------------------ !!
 
     Include "string/testString.inc"
@@ -64,5 +72,7 @@ Contains
     Include "dataArray/testDataArray.inc"
 
     Include "sLookUpTable/testSLTable.inc"
+
+    Include "dictionary/testDictionary.inc"
 
 End Module

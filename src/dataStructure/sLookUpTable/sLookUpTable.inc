@@ -1,4 +1,4 @@
-subroutine initializeSLtable(this, tableSize, name, strongSearch)
+subroutine initializeSLtable(this, strongSearch, name, tableSize)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
     Integer, optional :: tableSize
@@ -1307,5 +1307,33 @@ subroutine printSearchError(this, key, errStop)
     else
         write(*,*) "   [WARNING] Unknown Key : ", key, " in LookUpTable ", trim(this%name)
     end if
+
+end subroutine
+
+subroutine copySLTable(origin, target)
+Implicit None
+    Class(typSLookUpTable), intent(inout) :: origin
+    Type(typSLookUpTable), intent(in)     :: target
+    integer :: idata
+
+    Call origin%destroy()
+
+    origin%nKey         = target%nKey
+    origin%nTable       = target%nTable
+    origin%name         = target%name
+    origin%strongSearch = target%strongSearch
+
+    if (origin%nTable.ge.1) then
+        allocate(origin%keys(origin%nTable))
+        allocate(origin%dataArray(origin%nTable))
+        allocate(origin%isKeyActive(origin%nTable))
+
+        do idata = 1, origin%nTable
+            origin%keys(idata)        = target%keys(idata)
+            origin%dataArray(idata)   = target%dataArray(idata)
+            origin%isKeyActive(idata) = target%isKeyActive(idata)
+        enddo
+
+    endif
 
 end subroutine

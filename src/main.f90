@@ -3,16 +3,16 @@
         Use modGlobal
         use modDataStructure
 
-        Use modforDict
-
     Implicit None
 
-        Call testSLTable()
+        ! Call testString()
+
+        Call testDictionary
+
+        ! Call testSLTable()
 
         ! Call testLLink()
 
         ! Call testDataArray()
-
-        ! Call testString()
 
     End Program
