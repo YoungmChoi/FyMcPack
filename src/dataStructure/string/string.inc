@@ -193,7 +193,7 @@ subroutine parseCharString(str, delims, args, nargs)
 
 end subroutine
 
-subroutine parseCharChar(str, delims, args, nargs)
+subroutine parseCharCharOne(str, delims, args, nargs)
     Implicit None
     character(len=*) :: str,delims
     character(len=*),allocatable :: args(:)
@@ -210,22 +210,19 @@ subroutine parseCharChar(str, delims, args, nargs)
     nDelims = len_trim(delims)
     if (nDelims.ge.1) then
         do idel = 1, nDelims
-            Call parseCharCharOne(tmpStr, delims(idel:idel), args, nargs)
+            Call parseCharChar(tmpStr, delims(idel:idel), args, nargs)
 
             tmpStr = ""
             do j = 1, nargs
                 tmpStr = trim(tmpStr)//" "//trim(args(j))
             enddo
         enddo
-        Call parseCharCharOne(tmpStr, " ", args, nargs)
-    else
-        write(*,*) "    [ERROR] parseCharChar(str, delims). no delims."
-        stop
+        Call parseCharChar(tmpStr, " ", args, nargs)
     end if
 
 endSubroutine
 
-subroutine parseCharCharOne(str, delims, args, nargs)
+subroutine parseCharChar(str, delims, args, nargs)
     !
     !  Dr. George Benthiem's string subroutine
     !
@@ -595,15 +592,18 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
     character(len=CHAR_LEN)              :: dummyChar
     type(typString)                      :: dummyStr
     real :: dummyReal
-    character(len = 1)                   :: tmpOneC
+
+    integer :: ii
 
     iflag = .TRUE.
     call parse(str,' ', args, nArg)
+
     if (nArg.eq.0) then
         nArg  = 0
         iflag = .FALSE.
         return
     end if
+
     if (allocated(cArg))    deallocate(cArg)
     if (allocated(scArg))   deallocate(scArg)
     if (allocated(lcArg))   deallocate(lcArg)
@@ -615,7 +615,7 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
     allocate(cArg(nArg), scArg(nArg), lcArg(nArg), iArg(nArg), rArg(nArg), numFlag(nArg), scFlag(nArg))
     iArg    = 0
     rArg    = 0.0
-    scFlag  = -1
+    scFlag  = 0
     numFlag = .FALSE.
 
     do i = 1, nArg
@@ -631,6 +631,12 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
         rArg(i) = dummyReal
         iArg(i) = int(rArg(i))
         if (io.eq.0) numFlag(i) = .TRUE.
+
+        scFlag(i) = testOneChar(dummyChar(1:1))
+
+        if (numFlag(i)) then
+            if (scFlag(i).gt.0) scFlag(i) = 2
+        end if
 
     end do
 
@@ -668,11 +674,11 @@ function charHeader(this) result(value)
     end if
 
     if (nStr.ge.2) then
-        value = testOneCharHead(oneH)
+        value = testOneChar(oneH)
         if ( isStringEqual(tmpChar(1:2),"/*") ) value = 11
         if ( isStringEqual(tmpChar(1:2),"*/") ) value = 12
     else if (nStr.eq.1) then
-        value = testOneCharHead(oneH)
+        value = testOneChar(oneH)
     end if
 
 end function
@@ -709,40 +715,59 @@ function testOneChar(oneChar) result(value)
     character(len=1), intent(in) :: oneChar
     integer                      :: value
 
-    value = 0
+    value = 1
 
-    if ( isStringEqual(oneChar,";") ) value = 2
+    if ( isStringEqual(oneChar,";") ) value = 0
 
-    if ( isStringEqual(oneChar,"$") ) value = 3
+    if ( isStringEqual(oneChar,"$") ) value = 122
 
     if ( isStringEqual(oneChar,"{") ) then
-        value = 21
+        value = 1101
     else if ( isStringEqual(oneChar,"}") ) then
-        value = 22
+        value = 1102
     else if ( isStringEqual(oneChar,"(") ) then
-        value = 31
+        value = 1201
     else if ( isStringEqual(oneChar,")") ) then
-        value = 32
+        value = 1202
     else if ( isStringEqual(oneChar,"[") ) then
-        value = 41
+        value = 1001
     else if ( isStringEqual(oneChar,"]") ) then
-        value = 42
+        value = 1002
+    else if (testOneCharCommment(oneChar)) then
+        value = -100
     end if
 
 end function
 
-function testOneCharHead(oneChar) result(value)
+function testOneCharCommment(oneChar) result(isComment)
     implicit None
     character(len=1), intent(in) :: oneChar
-    integer                      :: value
+    logical                      :: isComment
     integer :: i
-    value = testOneChar(oneChar)
-    if (value.eq.0) then
-        do i = 1, nCommentCharList
-            if (isStringEqual(oneChar,commentCharList(i:i))) then
-                value = 1
-                exit
-            end if
-        enddo
-    end if
+    isComment = .FALSE.
+    do i = 1, nCommentCharList
+        if (isStringEqual(oneChar, commentCharList(i:i))) then
+            isComment = .TRUE.
+            exit
+        end if
+    enddo
 end function
+
+function insertSpaceSpecialCharacter(string) result(outString)
+    Character(len=*), intent(in)     :: string
+    Character(len=len(string) + 100) :: outString, tmpString
+    character(len=1) :: specChar
+    character(len=3) :: replChar
+    integer :: i
+    outString = ""
+    outString = string
+    do i = 1, nSpecialCharacter
+        specChar = specialCharacter(i:i)
+        replChar = " "//specChar//" "
+
+        tmpString = ""
+        tmpString = replace(outString, specChar, replChar)
+        outString = tmpString
+    enddo
+
+End function

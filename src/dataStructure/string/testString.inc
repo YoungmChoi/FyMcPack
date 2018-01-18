@@ -38,6 +38,12 @@ Subroutine testParse()
         write(*,*) trim(args(iarg))
     enddo
 
+    Call parseOneChar(tmpChar, " ();/*", args, nargs)
+
+    do iarg = 1, nargs
+        write(*,*) trim(args(iarg))
+    enddo
+
 end subroutine
 
 Subroutine testCharHeader()

@@ -65,35 +65,47 @@ interface parse
 
 end interface
 
+!! Parse String & Character
+interface parseOneChar
+
+    module procedure parseCharCharOne
+
+end interface
+
 !! Return string header type
 !!
 !!  -1 : blank line
-!!   0 : no comment
+!!   1 : word
+!!   0 : ";" is used.
 !!
-!!  1  : line comment
-!!  2  : ";" is used.
-!!  3  : "$" is used.
+!!  -100  : line comment
 !!
-!!  11 : comment block Start
-!!  12 : comment block end
+!!  111 : comment block Start
+!!  112 : comment block end
 !!
-!!  21 : "{" is used.
-!!  22 : "}" is used.
+!!  122 : "$" is used.
 !!
-!!  31 : "(" is used.
-!!  32 : ")" is used.
+!!  1001 : "[" is used.
+!!  1002 : "]" is used.
+
+!!  1101 : "{" is used.
+!!  1102 : "}" is used.
 !!
-!!  41 : "[" is used.
-!!  42 : "]" is used.
+!!  1201 : "(" is used.
+!!  1202 : ")" is used.
 !!
+
+Character(len=8), parameter, private :: specialCharacter = ";(){}$[]"
+
+integer, parameter, private :: nSpecialCharacter = 8    !! It should be same with length of specialCharacter
 
 Character(len=2), parameter, private :: commentBlockStart = "/*"
 
 Character(len=2), parameter, private :: commentBlockEnd   = "*/"
 
-Character(len=17),parameter, private :: commentCharList = "/!#@%^&*.,*-+<>?:"
+Character(len=16),parameter, private :: commentCharList = "/!#@%^&*.,-+<>?:"
 
-integer, parameter, private :: nCommentCharList = 17    !! It should be same with length of commentCharList
+integer, parameter, private :: nCommentCharList = 16    !! It should be same with length of commentCharList
 
 private :: charHeader
 
