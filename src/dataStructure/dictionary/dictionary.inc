@@ -5,6 +5,8 @@ Subroutine initDict_Name(this, dictName)
 
     this%dictName = dictName
 
+    Call this%sLTable%initialize()
+
 End Subroutine
 
 Subroutine initDict_NameLookUpTable(this, dictName, sLTable)

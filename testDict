@@ -1,36 +1,21 @@
 
+varR    1.0;                    // Real
+varI    2;                      // Integer
 
-varR    1.0;
+varS    stringVariable;         // String
 
-varI    2;
 
-arrR    
-( 
-    11    
-    12   
-    13  
+arrR    (  1.0    2.0   3.0);    // Real Array
+
+arrS                            // String Array
+(
+    a b c
+);             
+
+mat1
+(
+    1   2   3
+    4   5   6   
+    7   8   9
 );
-
-arrI  ( 123 256 486 );
-
-arrL  ( true false t f );
-
-arrS  ( string1 string2 );
-
-dict1
-{
-    abc    waveType;
-    def    jonswap;
-
-}
-
-dict2
-{
-    $dict1
-    
-    abc     currentType;
-    ghk     what;
-}
-
-
 

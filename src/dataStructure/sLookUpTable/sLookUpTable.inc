@@ -1131,6 +1131,8 @@ subroutine printSLTable(this)
         write(*,*) "{"
         do ikey = 1, this%nKey
 
+            if (this%isKeyActive(ikey)) then
+
             nData = this%dataArray(ikey)%nData
 
             !!... Write Number
@@ -1190,6 +1192,8 @@ subroutine printSLTable(this)
                     enddo
                     write(*,*) "    )"
                 end if
+            end if
+
             end if
 
         end do

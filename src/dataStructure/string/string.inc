@@ -601,46 +601,47 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
     if (nArg.eq.0) then
         nArg  = 0
         iflag = .FALSE.
-        return
+    else
+        if (allocated(cArg))    deallocate(cArg)
+        if (allocated(scArg))   deallocate(scArg)
+        if (allocated(lcArg))   deallocate(lcArg)
+        if (allocated(iArg))    deallocate(iArg)
+        if (allocated(rArg))    deallocate(rArg)
+        if (allocated(numFlag)) deallocate(numFlag)
+        if (allocated(scFlag))  deallocate(scFlag)
+
+        allocate(cArg(nArg), scArg(nArg), lcArg(nArg))
+        allocate(iArg(nArg), rArg(nArg), numFlag(nArg), scFlag(nArg))
+
+        iArg    = 0
+        rArg    = 0.0
+        scFlag  = 0
+        numFlag = .FALSE.
+
+        do i = 1, nArg
+            dummyChar = trim(args(i))
+
+            Call compactChar(dummyChar)
+            Call dummyStr%set(dummyChar,.TRUE.)
+
+            cArg(i)  = dummyStr%get()
+            scArg(i) = dummyStr%getLower()
+            lcArg(i) = dummyStr%getUpper()
+            read(dummyChar, *, iostat = io) dummyReal
+            rArg(i) = dummyReal
+            iArg(i) = int(rArg(i))
+            if (io.eq.0) numFlag(i) = .TRUE.
+
+            scFlag(i) = testOneChar(dummyChar(1:1))
+
+            if (numFlag(i)) then
+                if (scFlag(i).gt.0) scFlag(i) = 2
+            end if
+
+        end do
+
+        Call dummyStr%destroy()
     end if
-
-    if (allocated(cArg))    deallocate(cArg)
-    if (allocated(scArg))   deallocate(scArg)
-    if (allocated(lcArg))   deallocate(lcArg)
-    if (allocated(iArg))    deallocate(iArg)
-    if (allocated(rArg))    deallocate(rArg)
-    if (allocated(numFlag)) deallocate(numFlag)
-    if (allocated(scFlag))  deallocate(scFlag)
-
-    allocate(cArg(nArg), scArg(nArg), lcArg(nArg), iArg(nArg), rArg(nArg), numFlag(nArg), scFlag(nArg))
-    iArg    = 0
-    rArg    = 0.0
-    scFlag  = 0
-    numFlag = .FALSE.
-
-    do i = 1, nArg
-        dummyChar = trim(args(i))
-
-        Call compactChar(dummyChar)
-        Call dummyStr%set(dummyChar,.TRUE.)
-
-        cArg(i)  = dummyStr%get()
-        scArg(i) = dummyStr%getLower()
-        lcArg(i) = dummyStr%getUpper()
-        read(dummyChar, *, iostat = io) dummyReal
-        rArg(i) = dummyReal
-        iArg(i) = int(rArg(i))
-        if (io.eq.0) numFlag(i) = .TRUE.
-
-        scFlag(i) = testOneChar(dummyChar(1:1))
-
-        if (numFlag(i)) then
-            if (scFlag(i).gt.0) scFlag(i) = 2
-        end if
-
-    end do
-
-    Call dummyStr%destroy()
 
 end subroutine
 
@@ -717,9 +718,13 @@ function testOneChar(oneChar) result(value)
 
     value = 1
 
+    if ( isStringEqual(oneChar," ") ) value = -1
+
     if ( isStringEqual(oneChar,";") ) value = 0
 
     if ( isStringEqual(oneChar,"$") ) value = 122
+
+    if ( isStringEqual(oneChar,new_line("a")) ) value = -2
 
     if ( isStringEqual(oneChar,"{") ) then
         value = 1101
@@ -737,6 +742,24 @@ function testOneChar(oneChar) result(value)
         value = -100
     end if
 
+end function
+
+function isWord(intArray) result(value)
+    Implicit None
+    Integer,dimension(:) :: intArray
+    logical :: value
+    integer :: nInt, ii
+    nInt = sizeof(intArray)/sizeof(1)
+    value = .FALSE.
+    if (nInt.ge.1) then
+        value = .TRUE.
+        do ii = 1, nInt
+            if ((intArray(ii).ne.1).and.(intArray(ii).ne.2)) then
+                value = .FALSE.
+                exit
+            end if
+        enddo
+    end if
 end function
 
 function testOneCharCommment(oneChar) result(isComment)
@@ -771,3 +794,22 @@ function insertSpaceSpecialCharacter(string) result(outString)
     enddo
 
 End function
+
+Logical Function isAllTrue(logicalArray)
+    implicit none
+    logical, dimension(:), intent(in) :: logicalArray
+    integer :: nn, i
+    logical :: dummy
+    isAllTrue = .TRUE.
+    nn = sizeof(logicalArray) / sizeof(dummy)
+    if (nn.eq.0) then
+        isAllTrue = .FALSE.
+        return
+    end if
+    do i = 1, nn
+        if(logicalArray(i).EQV..FALSE.) then
+            isAllTrue = .FALSE.
+            return
+        end if
+    enddo
+end function
