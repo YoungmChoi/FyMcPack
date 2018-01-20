@@ -29,9 +29,9 @@ contains
 
     !!!... initialize sLookUpTable with default setting
     !!
-    !! Call initializeSLtable(this, opt = .strongSearch., int=tableSize, char=name)
+    !! Call initializeSLtable(this, char=name, opt = .strongSearch., int=tableSize)
     !!
-    procedure, pass, private :: initializeSLtable
+    procedure, pass, public :: initialize => initializeSLtable
 
     !!... push real or real array to sLookUpTable
     !!
@@ -102,7 +102,7 @@ contains
     !!!... Public Procedures
 
     !!... Initiaize sLookUpTable
-    generic :: initialize => initializeSLtable
+    !! generic :: initialize => initializeSLtable
 
     !!... Push data to sLookUpTable
     generic :: push => pushSLTableReal, pushSLTableRealArray, &

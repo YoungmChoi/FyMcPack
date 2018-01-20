@@ -4,7 +4,7 @@ private
 
     integer :: nStr_
 
-    Character(len=strMaxLength) :: str_
+    Character(len=CHAR_LEN) :: str_
 
 Contains
 

@@ -1,21 +1,31 @@
 
-varR    1.0;                    // Real
-varI    2;                      // Integer
 
-varS    stringVariable;         // String
+    varR    1.0;                    // Real
+    varI    2;                      // Integer
+
+    varS    stringVariable;         // String
 
 
-arrR    (  1.0    2.0   3.0);    // Real Array
+    arrR    (  1.0    2.0   3.0);    // Real Array
 
-arrS                            // String Array
-(
-    a b c
-);             
+    arrS                            // String Array
+    (
+        a b c
+    );
 
-mat1
-(
-    1   2   3
-    4   5   6   
-    7   8   9
-);
+    mat1
+    (
+        1   2   3
+        4   5   6
+        7   8   9
+    );
 
+
+    dict1
+
+    {
+
+        animal  tiger;
+        planet  earth;
+        
+    }

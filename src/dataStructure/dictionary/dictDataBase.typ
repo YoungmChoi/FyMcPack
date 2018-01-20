@@ -1,17 +1,5 @@
-Type, private :: typDictDataBase
+integer :: nDictDB_
 
-private
+Type(typDictionary), allocatable, target , private :: dictDB(:)
 
-    integer :: nDictBase_
-
-    Type(typDictionary), allocatable :: dictDataBase(:)
-
-    logical,allocatable              :: dictActive(:)
-
-End Type
-
-Type(typDictDataBase), private :: dictDataBase
-
-interface initializeDict
-
-end interface
+logical, allocatable, private         :: dictDBActive(:)

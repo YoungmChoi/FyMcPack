@@ -4,6 +4,8 @@ private
 
     character(len=CHAR_LEN), public  :: dictName
 
+    integer, public                  :: dictID
+
     type(typSLookUpTable), public    :: sLTable
 
     type(typSLookUpTable), public    :: subDictTable
@@ -27,10 +29,19 @@ Contains
     !!
     !! Call initDict_NameStringArray(typDict, "dictName", typStringArray)
     !!
-    procedure, pass, private :: initDict_NameStringArray
+    procedure, pass, private :: initDict_NameFileIOIndex
 
+    !!... Initialize dictionary with name and stringArray
+    !!
+    !! Call initDict_NameStringArray(typDict, "dictName", typStringArray)
+    !!
+    !! procedure, pass, private :: initDict_NameFileCharArray
+
+    procedure, pass, public :: destroy => destroyDictionary
 
     !! Initialize Overloading
-    generic :: initialize => initDict_Name, initDict_NameLookUpTable
+    generic :: initialize => initDict_Name, &
+                             initDict_NameLookUpTable, &
+                             initDict_NameFileIOIndex
 
 End Type

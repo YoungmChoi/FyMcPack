@@ -1,8 +1,8 @@
-subroutine initializeSLtable(this, strongSearch, name, tableSize)
+subroutine initializeSLtable(this, name, strongSearch, tableSize)
     Implicit None
     class(typSLookUpTable), intent(inout) :: this
-    Integer, optional :: tableSize
     Character(len=*),optional :: name
+    Integer, optional :: tableSize
     logical,optional :: strongSearch
 
     this%nKey   = 0
@@ -22,11 +22,11 @@ subroutine initializeSLtable(this, strongSearch, name, tableSize)
 
     this%name = " "
     if (present(name)) then
-        this%name = trim(name)
+        this%name = name
     end if
 
     this%strongSearch = .FALSE.
-    if (present(name)) then
+    if (present(strongSearch)) then
         this%strongSearch = strongSearch
     end if
 
@@ -119,6 +119,7 @@ subroutine pushSLTableInt(this, key, value)
     integer, intent(in)                   :: value
     integer :: keyIndex
     logical :: isExist
+    type(typString) :: tmpString
 
     Call this%searchKeyIndex(key, keyIndex, isExist)
 
@@ -1275,7 +1276,6 @@ subroutine searchKeyIndex(this, key, keyIndex, isExist)
     character(len=*), intent(in)          :: key
     integer,intent(out)                   :: keyIndex
     logical,intent(out)                   :: isExist
-
     integer :: ikey
 
     !!... Optimization is needed !!!

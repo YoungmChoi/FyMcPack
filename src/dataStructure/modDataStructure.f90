@@ -37,6 +37,8 @@ private
 
     logical, parameter :: sLTableSearchErrrorStop = .TRUE.
 
+    integer, parameter :: fileLineLength = 2000
+
 !!  Header Files ---------------------------------------------------- !!
 
     Include "string/string.typ"

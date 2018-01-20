@@ -7,12 +7,12 @@ Subroutine setString(this, string, isTrim)
     character(len=len_trim(string)) tmpString
 
     tmpString = string
-    this%str_ = ""
+    this%str_ = ''
     nChar = sizeof(tmpString)/ sizeof("a")
 
-    if (nChar.gt.strMaxLength) then
-        write(*,*) "    [WARNING] setString(string), string is longer than strMaxLength."
-        nChar = strMaxLength
+    if (nChar.gt.CHAR_LEN) then
+        write(*,*) "    [WARNING] setString(string), string is longer than CHAR_LEN."
+        nChar = CHAR_LEN
     end if
 
     this%nStr_ = nChar
@@ -145,7 +145,7 @@ subroutine parseStringString(this, delims, args, nargs)
     character(len=*)                :: delims
     type(typString),allocatable     :: args(:)
     integer, intent(out)            :: nargs
-    character(len=strMaxLength),allocatable :: tmpArgs(:)
+    character(len=CHAR_LEN),allocatable :: tmpArgs(:)
     integer :: istr
     Call parseCharChar(this%str_, delims, tmpArgs, nargs)
 
@@ -177,7 +177,7 @@ subroutine parseCharString(str, delims, args, nargs)
     character(len=*) :: str,delims
     type(typString),allocatable     :: args(:)
     integer, intent(out)            :: nargs
-    character(len=strMaxLength),allocatable :: tmpArgs(:)
+    character(len=CHAR_LEN),allocatable :: tmpArgs(:)
     integer :: istr
 
     Call parseCharChar(str, delims, tmpArgs, nargs)
