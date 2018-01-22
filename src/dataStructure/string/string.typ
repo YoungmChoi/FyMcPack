@@ -72,6 +72,12 @@ interface parseOneChar
 
 end interface
 
+interface compact
+
+    module procedure compactChar
+
+end interface
+
 !! Return string header type
 !!
 !!  -1 : blank line
