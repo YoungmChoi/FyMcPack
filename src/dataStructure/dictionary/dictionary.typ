@@ -4,9 +4,9 @@ private
 
     character(len=CHAR_LEN), public  :: dictName
 
-    integer, public                  :: dictID
+    integer                          :: dictID
 
-    integer, public                  :: parentDictID
+    integer                          :: parentDictID
 
     type(typSLookUpTable), public    :: sLTable
 
@@ -14,42 +14,25 @@ private
 
 Contains
 
-    !!!... Initialize dictionary with name
-    !!
-    !! Call initDict_Name(typDict, "dictName")
-    !!
-    procedure, pass, private :: initDict_Name
-
-
-    !!... Initialize dictionary with name and lookUpTable
-    !!
-    !! Call initDict_Name(typDict, "dictName", typSLookUpTable)
-    !!
-    procedure, pass, private :: initDict_NameLookUpTable
-
-    !!... Initialize dictionary with name and stringArray
-    !!
-    !! Call initDict_NameStringArray(typDict, "dictName", typStringArray)
-    !!
-    procedure, pass, private :: initDict_NameFileIOIndex
-
-    !!... Initialize dictionary with name and stringArray
-    !!
-    !! Call initDict_NameStringArray(typDict, "dictName", typStringArray)
-    !!
-    !! procedure, pass, private :: initDict_NameFileCharArray
-
     procedure, pass, public :: destroy => destroyDictionary
 
-    !! Initialize Overloading
-    generic :: initialize => initDict_Name, &
-                             initDict_NameLookUpTable, &
-                             initDict_NameFileIOIndex
-
+    !! Add dictionary to another
+    !!
+    !!  Call addDict(this = typDict, from = typDict)
     !!
     procedure, pass, public :: addDict
 
-    ! !!
-    ! procedure, pass, public :: addSubDict
+    !! Copy Subroutine
+    !!
+    !!  Call copyDict(to = typDict, from = typDict)
+    !!
+    procedure, pass, private :: copyDict
+
+    !! Copy Operator
+    !!
+    !!  typDict to = from
+    !!
+    generic :: assignment(=) => copyDict
+
 
 End Type

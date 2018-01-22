@@ -813,3 +813,175 @@ Logical Function isAllTrue(logicalArray)
         end if
     enddo
 end function
+
+Subroutine readMakeCharArrayFromCharArray(charArray, subCharArray, nLine, charStart, charEnd, isSubSet)
+    Implicit None
+    !Character(len=fileLineLength), allocatable   :: CharArray(:)
+    Character(len=fileLineLength), dimension(:)  :: CharArray
+    Character(len=fileLineLength), allocatable   :: subCharArray(:)
+    integer, optional                            :: nLine
+    Character(len=*), optional                   :: charStart, charEnd
+    logical, optional                            :: isSubSet
+    !! ----------------------------------------------------------------------
+    logical :: readUntilEnd
+    logical :: isCharActive
+    Character(len=fileLineLength) :: tmpLine, modLine
+    Character(len=fileLineLength), allocatable  :: tmpCharArray(:)
+    integer :: nn, nTotalLine
+    integer :: nSubLine
+
+    integer :: iSub
+
+    logical :: subSetOption
+    !! ----------------------------------------------------------------------
+    if (allocated(subCharArray)) deallocate(subCharArray)
+    if (allocated(tmpCharArray)) deallocate(tmpCharArray)
+
+    nTotalLine = sizeof(CharArray) / sizeof(tmpLine)
+
+    subSetOption = .FALSE.
+    iSub = 0
+
+    if (present(isSubSet)) subSetOption = isSubSet
+
+    if (nTotalLine.ge.1) then
+
+        readUntilEnd = .FALSE.
+        if ( present(charEnd) ) then
+            if (len_trim(charEnd).eq.0) then
+                readUntilEnd = .TRUE.
+                subSetOption = .FALSE.
+            end if
+        end if
+
+        if ( present(charStart) ) then
+            isCharActive = .FALSE.
+            if (len_trim(charStart).eq.0) then
+                isCharActive = .TRUE.
+                subSetOption = .FALSE.
+            end if
+        else
+            isCharActive = .TRUE.
+        end if
+
+        nSubLine = 0
+        do nn = 1, nTotalLine
+            tmpLine = charArray(nn)
+            modLine = tmpLine
+            Call compactChar(modLine)
+
+            if ( present(charStart) ) then
+                if (isStringEqual(modLine, charStart)) then
+                    isCharActive = .TRUE.
+                    if (subSetOption) iSub = iSub + 1
+                end if
+
+            end if
+
+            if (isCharActive) then
+                nSubLine = nSubLine + 1
+                if (nSubLine.eq.1) then
+                    allocate( subCharArray(1) )
+                    subCharArray(1) = tmpLine
+                else
+                    Call move_alloc(subCharArray, tmpCharArray)
+
+                    allocate( subCharArray(nSubLine) )
+                    subCharArray(1:nSubLine-1) = tmpCharArray
+                    subCharArray(nSubLine)     = tmpLine
+
+                end if
+            end if
+
+            if ((readUntilEnd.EQV..FALSE.).AND.isCharActive) then
+
+                if ( present(charEnd) ) then
+                    if (isStringEqual(modLine, charEnd,.TRUE.)) then
+
+                        if (subSetOption) then
+                            iSub = iSub - 1
+                            if (iSub.eq.0) exit
+                        else
+                            exit
+                        end if
+                     end if
+                end if
+            end if
+
+        enddo
+
+        if (present(nLine)) nLine = nSubLine
+        if (allocated(tmpCharArray)) deallocate(tmpCharArray)
+
+    else
+        if (present(nLine)) nLine = 0
+    end if
+
+End Subroutine
+
+Subroutine readMakeCharArrayFromFile(fileIndex, subCharArray, nLine, charStart, charEnd, fRewind)
+    Implicit None
+    Integer, intent(in)                         :: fileIndex
+    Character(len=fileLineLength), allocatable  :: subCharArray(:)
+    integer, optional                           :: nLine
+    Character(len=*), optional                  :: charStart, charEnd
+    logical, optional                           :: fRewind
+    !! ----------------------------------------------------------------------
+    logical :: isCharActive
+    integer :: ios
+    Character(len=fileLineLength) :: tmpLine
+    Character(len=fileLineLength), allocatable  :: tmpCharArray(:)
+    integer :: nn
+    logical :: readUntilEnd
+    !! ----------------------------------------------------------------------
+
+    if (allocated(subCharArray)) deallocate(subCharArray)
+    if (allocated(tmpCharArray)) deallocate(tmpCharArray)
+
+    readUntilEnd = .FALSE.
+    if ( present(charEnd) ) then
+        if (len_trim(charEnd).eq.0) readUntilEnd = .TRUE.
+    end if
+
+    if ( present(charStart) ) then
+        isCharActive = .FALSE.
+        if (len_trim(charStart).eq.0) isCharActive = .TRUE.
+    else
+        isCharActive = .TRUE.
+    end if
+
+    nn = 0
+    !! File Read
+    do
+        !!... Read Line and exit if file end
+        read(fileIndex, "(a)", iostat = ios) tmpLine; if (ios < 0) exit
+
+        if ( present(charStart) ) then
+            if (isStringEqual(tmpLine, charStart,.TRUE.)) isCharActive = .TRUE.
+        end if
+
+        if (isCharActive) then
+            nn = nn + 1
+            if (nLine.eq.1) then
+                allocate( subCharArray(1) )
+                subCharArray(1) = tmpLine
+            else
+                Call move_alloc(subCharArray, tmpCharArray)
+                allocate( subCharArray(nn) )
+                subCharArray(1:nn-1) = tmpCharArray
+                subCharArray(nn)     = tmpLine
+            end if
+        end if
+
+        if ((readUntilEnd.EQV..FALSE.).AND.isCharActive) then
+            if ( present(charEnd) ) then
+                if (isStringEqual(tmpLine, charEnd,.TRUE.)) exit
+            end if
+        end if
+
+    enddo
+
+    if (present(nLine)) nLine = nn
+    if (allocated(tmpCharArray)) deallocate(tmpCharArray)
+
+End Subroutine

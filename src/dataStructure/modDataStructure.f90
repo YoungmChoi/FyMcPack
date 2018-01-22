@@ -43,11 +43,15 @@ private
 
     Include "string/string.typ"
 
+    Include "fileIO/fileIO.typ"
+
     Include "dataArray/dataArray.typ"
 
     Include "sLookUpTable/sLookUpTable.typ"
 
     Include "dictionary/dictionary.typ"
+
+    Include "dictionary/dictionaryPtr.typ"
 
     Include "dictionary/dictDataBase.typ"
 
@@ -59,11 +63,17 @@ Contains
 
     Include "string/string.inc"
 
+    Include "fileIO/fileIO.inc"
+
     Include "dataArray/dataArray.inc"
 
     Include "sLookUpTable/sLookUpTable.inc"
 
+    Include "auxiliary/auxiliary.inc"
+
     Include "dictionary/dictionary.inc"
+
+    Include "dictionary/dictionaryPtr.inc"
 
     Include "dictionary/dictDataBase.inc"
 
