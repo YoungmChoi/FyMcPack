@@ -5,7 +5,6 @@
 
     varS    stringVariable;         // String
 
-
     arrR    (  1.0    2.0   3.0);    // Real Array
 
     arrS                            // String Array
@@ -13,19 +12,36 @@
         a b c
     );
 
+    arg1    $arrR;
+
+    dict1
+    {
+
+        animal  tiger;
+        planet  earth;
+
+        dict3
+        {
+            fruit ananas;
+        }
+
+        dict4
+        {
+            human jungHyun;
+
+            $dict3
+        }
+
+    }
+
+    dict2
+    {
+        $dict1
+    }
+
     mat1
     (
         1   2   3
         4   5   6
         7   8   9
     );
-
-
-    dict1
-
-    {
-
-        animal  tiger;
-        planet  earth;
-        
-    }

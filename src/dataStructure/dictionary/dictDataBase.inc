@@ -1,6 +1,7 @@
-Subroutine initializeDictDataBase(dictName, dictID)
+Subroutine initializeDictDataBase(dictName, dictID, parentDictID)
     Character(len=CHAR_LEN), intent(in)         :: dictName
-    integer,intent(out) :: dictID
+    integer,intent(out)                         :: dictID
+    integer, optional                           :: parentDictID
     !! ------------------------------------------------------------------------
     Type(typDictionary), target, allocatable :: tmpDict(:)
     logical, allocatable             :: tmpDictActive(:)
@@ -51,5 +52,10 @@ Subroutine initializeDictDataBase(dictName, dictID)
 
     Call dictDB(dictID)%sLTable%initialize(trim(dictName)//"_lookUpTable")
     Call dictDB(dictID)%subDictTable%initialize(trim(dictName)//"_subDict")
+
+    dictDB(dictID)%parentDictID = 0
+    if (present(parentDictID)) then
+        dictDB(dictID)%parentDictID = parentDictID
+    end if
 
 End Subroutine

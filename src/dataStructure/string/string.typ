@@ -95,7 +95,7 @@ end interface
 !!  1202 : ")" is used.
 !!
 
-Character(len=8), parameter, private :: specialCharacter = ";(){}$[]"
+Character(len=7), parameter, private :: specialCharacter = ";(){}[]"
 
 integer, parameter, private :: nSpecialCharacter = 8    !! It should be same with length of specialCharacter
 

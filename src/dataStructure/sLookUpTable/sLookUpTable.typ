@@ -3,7 +3,7 @@ Type, public :: typSLookUpTable
 private
 
     !! Number of Keys (only increase)
-    integer :: nKey = 0
+    integer, public :: nKey = 0
 
     !! Number of Tables (Saving Space)
     integer :: nTable = 0
@@ -81,11 +81,17 @@ contains
     !!
     procedure, pass, private :: printSearchError
 
-    !!... Print LookUpTable Contents
+    !!... Search keyIndex in sLookUpTable
     !!
     !! Call searchKeyIndex(this, "key", int = keyIndex, logical = isExist)
     !!
     procedure, pass, private :: searchKeyIndex
+
+    !!... Search keyIndex in sLookUpTable and add if it exist not
+    !!
+    !! Call searchKeyIndexAndAdd(this, "key", int = keyIndex, logical = isExist)
+    !!
+    procedure, pass, private :: searchKeyIndexAndAdd
 
     !!... Reallocate LookUpTable with given tableSize
     !!
@@ -110,6 +116,12 @@ contains
                        pushSLTableInt, pushSLTableIntArray, &
                        pushSLTableChar, pushSLTableCharArray, &
                        pushSLTableLogical, pushSLTableLogicalArray
+
+    !!... Get key character for given keyIndex
+    !!
+    !! Call getReal(this, "key", real)
+    !!
+    procedure, pass, public :: getKey => getSLTableKey
 
     !!... Get real from given sLookUpTable with keyword
     !!
@@ -183,6 +195,31 @@ contains
     !!
     procedure, pass, public :: keyExist => keyExistSLTableData
 
+
+    !!... Search keyword defined in sLookUpTable and Return Logical type
+    !!
+    !! .logical. = isNumber(this, "key")
+    !!
+    procedure, pass, public :: isNumber => isNumberSLTableData
+
+    !!... Search keyword defined in sLookUpTable and Return Logical type
+    !!
+    !! .logical. = isInt(this, "key")
+    !!
+    procedure, pass, public :: isInt => isIntSLTableData
+
+    !!... Search keyword defined in sLookUpTable and Return Logical type
+    !!
+    !! .logical. = isCharacter(this, "key")
+    !!
+    procedure, pass, public :: isCharacter => isCharSLTableData
+
+    !!... Search keyword defined in sLookUpTable and Return Logical type
+    !!
+    !! .logical. = isLogical(this, "key")
+    !!
+    procedure, pass, public :: isLogical => isLogicalSLTableData
+
     !!... Write sLookUpTable contents
     !!
     !! Call print(this)
@@ -194,6 +231,13 @@ contains
     !! sLookUpTable = sLookUpTable
     !!
     generic :: assignment(=) => copySLTable
+
+    !!... Add Key and Data from another sLTable
+    !!
+    !! Call add(this, target)
+    !!
+    procedure, pass, public :: add => addSLTable
+
 
     !!... Destroy LookUpTable
     !!

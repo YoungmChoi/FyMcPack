@@ -6,6 +6,8 @@ private
 
     integer, public                  :: dictID
 
+    integer, public                  :: parentDictID
+
     type(typSLookUpTable), public    :: sLTable
 
     type(typSLookUpTable), public    :: subDictTable
@@ -43,5 +45,11 @@ Contains
     generic :: initialize => initDict_Name, &
                              initDict_NameLookUpTable, &
                              initDict_NameFileIOIndex
+
+    !!
+    procedure, pass, public :: addDict
+
+    ! !!
+    ! procedure, pass, public :: addSubDict
 
 End Type

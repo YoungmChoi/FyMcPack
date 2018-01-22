@@ -69,7 +69,7 @@ subroutine pushSLTableRealRP(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(real(value, rp))
@@ -81,7 +81,7 @@ subroutine pushSLTableRealRP(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -94,7 +94,7 @@ subroutine pushSLTableRealRPArray(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(value)
@@ -106,7 +106,7 @@ subroutine pushSLTableRealRPArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -121,7 +121,7 @@ subroutine pushSLTableInt(this, key, value)
     logical :: isExist
     type(typString) :: tmpString
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(real(value, rp))
@@ -133,7 +133,7 @@ subroutine pushSLTableInt(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -146,7 +146,7 @@ subroutine pushSLTableIntArray(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(value)
@@ -158,7 +158,7 @@ subroutine pushSLTableIntArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -171,7 +171,7 @@ subroutine pushSLTableChar(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(value)
@@ -183,7 +183,7 @@ subroutine pushSLTableChar(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -196,7 +196,7 @@ subroutine pushSLTableCharArray(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(value)
@@ -208,7 +208,7 @@ subroutine pushSLTableCharArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -222,7 +222,7 @@ subroutine pushSLTableLogical(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(value)
@@ -234,7 +234,7 @@ subroutine pushSLTableLogical(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
@@ -247,7 +247,7 @@ subroutine pushSLTableLogicalArray(this, key, value)
     integer :: keyIndex
     logical :: isExist
 
-    Call this%searchKeyIndex(key, keyIndex, isExist)
+    Call this%searchKeyIndexAndAdd(key, keyIndex, isExist)
 
     if (isExist) then
         Call this%dataArray(keyIndex)%set(value)
@@ -259,14 +259,41 @@ subroutine pushSLTableLogicalArray(this, key, value)
         Call this%keys(keyIndex)%set(key, .TRUE.)
         Call this%dataArray(keyIndex)%set(value)
         this%nkey = this%nkey + 1
-        this%isKeyActive = .TRUE.
+        this%isKeyActive(keyIndex) = .TRUE.
     end if
 
 end subroutine
 
+function getSLTableKey(this, keyIndex, isStop) result(key)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
+    integer, intent(in)                   :: keyIndex
+    character(len=CHAR_LEN)               :: key
+    logical,optional                      :: isStop
+    logical                               :: isExist
+    logical :: isErr
+
+    isErr = .TRUE.
+    if (present(isStop)) isErr = isStop
+
+    key = ""
+    if (keyIndex.le.this%nKey) then
+        if (this%isKeyActive(keyIndex)) then
+            key = this%keys(keyIndex)%get()
+        else
+            write(*,*) "No key exist for given key Index. keyIndex : ", keyIndex
+            if (isErr) stop
+        end if
+    else
+        write(*,*) "Given keyIndex is over than sLookTable Size. keyIndex : ", keyIndex
+        if (isErr) stop
+    end if
+
+end function
+
 subroutine getSLTableReal(this, key, value, ivar, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     real(RP)                              :: value
 
@@ -374,7 +401,7 @@ end subroutine
 
 subroutine getSLTableRealArray(this, key, value, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     real(rp), allocatable, intent(out)    :: value(:)
 
@@ -458,7 +485,7 @@ end subroutine
 
 subroutine getSLTableInt(this, key, value, ivar, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     integer                               :: value
     integer,optional                      :: ivar
@@ -487,7 +514,7 @@ end subroutine
 
 subroutine getSLTableIntArray(this, key, value, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     integer, allocatable, intent(out)     :: value(:)
     real(rp), allocatable                 :: rValue(:)
@@ -549,7 +576,7 @@ end subroutine
 
 subroutine getSLTableString(this, key, value, ivar, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     type(typString),intent(out)           :: value
 
@@ -593,7 +620,7 @@ subroutine getSLTableString(this, key, value, ivar, isStop, isCorrect)
                 if (errStop) stop
             end if
         else
-            write(*,*) "    [ERROR] getSLTableReal, key : ", trim(key)
+            write(*,*) "    [ERROR] getSLTableString, key : ", trim(key)
             write(*,*) "            the size of data is zero."
             if (errStop) stop
         end if
@@ -607,7 +634,7 @@ end subroutine
 
 subroutine getSLTableStringArray(this, key, value, isStop, isCorrect, delims)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
 
     logical, intent(in), optional         :: isStop
@@ -670,7 +697,7 @@ end subroutine
 
 subroutine getSLTableChar(this, key, value, ivar, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     character(len=CHAR_LEN)               :: value
     integer, optional                     :: ivar
@@ -702,7 +729,7 @@ end subroutine
 
 subroutine getSLTableCharArray(this, key, value, isStop, isCorrect, delims)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     character(len=CHAR_LEN), allocatable  :: value(:)
 
@@ -763,7 +790,7 @@ end subroutine
 
 subroutine getSLTableLogical(this, key, value, ivar, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     logical,intent(out)                   :: value
     integer, optional                     :: ivar
@@ -936,7 +963,7 @@ end subroutine
 
 subroutine getSLTableLogicalArray(this, key, value, isStop, isCorrect)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     logical, allocatable                  :: value(:)
 
@@ -1087,15 +1114,15 @@ subroutine reallocateSLTable(this, tableSize)
         if (tableSize.lt.this%nTable) then
 
             do ikey = 1, tableSize
-                tmpKeys(ikey)      = this%keys(ikey)
-                tmpDataArray(ikey) = this%dataArray(ikey)
+                tmpKeys(ikey)        = this%keys(ikey)
+                tmpDataArray(ikey)   = this%dataArray(ikey)
                 tmpisKeyActive(ikey) = this%isKeyActive(ikey)
             end do
         else
 
             do ikey = 1, this%nTable
-                tmpKeys(ikey)      = this%keys(ikey)
-                tmpDataArray(ikey) = this%dataArray(ikey)
+                tmpKeys(ikey)        = this%keys(ikey)
+                tmpDataArray(ikey)   = this%dataArray(ikey)
                 tmpisKeyActive(ikey) = this%isKeyActive(ikey)
             end do
 
@@ -1124,12 +1151,13 @@ end subroutine
 
 subroutine printSLTable(this)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in) :: this
     integer :: ikey, idata, nData
 
+    write(*,*) "LookUpTable : ", trim(this%name)
+    write(*,*) "{"
+
     if (this%nKey.ge.1) then
-        write(*,*) "LookUpTable : ", trim(this%name)
-        write(*,*) "{"
         do ikey = 1, this%nKey
 
             if (this%isKeyActive(ikey)) then
@@ -1198,13 +1226,10 @@ subroutine printSLTable(this)
             end if
 
         end do
-        write(*,*) "}"
     else
-        write(*,*) "LookUpTable"
-        write(*,*) "}"
         write(*,*) "    empty."
-        write(*,*) "}"
     end if
+    write(*,*) "}"
 
     1010 format(5x,a,3x,"numVector",3x,i6)
     1011 format(5x,a,3x,"num",f15.6)
@@ -1263,16 +1288,107 @@ end subroutine
 
 function keyExistSLTableData(this, key) result(isExist)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     logical                               :: isExist
     integer                               :: keyIndex
     Call searchKeyIndex(this, key, keyIndex, isExist)
 end function
 
+function isNumberSLTableData(this, key) result(isNumber)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
+    character(len=*), intent(in)          :: key
+    logical                               :: isNumber
+    integer                               :: keyIndex
+    logical                               :: isExist
+    isNumber = .FALSE.
+    Call searchKeyIndex(this, key, keyIndex, isExist)
+
+    if (isExist) then
+        isNumber = this%dataArray(keyIndex)%isNum
+    else
+        call this%printSearchError(key, .TRUE.)
+    end if
+end function
+
+function isIntSLTableData(this, key) result(isInt)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
+    character(len=*), intent(in)          :: key
+    logical                               :: isInt
+    integer                               :: keyIndex
+    logical                               :: isExist
+
+    isInt = .FALSE.
+    Call searchKeyIndex(this, key, keyIndex, isExist)
+
+    if (isExist) then
+        isInt = this%dataArray(keyIndex)%isInt
+    else
+        call this%printSearchError(key, .TRUE.)
+    end if
+
+end function
+
+function isCharSLTableData(this, key) result(isChar)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
+    character(len=*), intent(in)          :: key
+    logical                               :: isChar
+    integer                               :: keyIndex
+    logical                               :: isExist
+    isChar = .FALSE.
+    Call searchKeyIndex(this, key, keyIndex, isExist)
+    if (isExist) then
+        isChar = this%dataArray(keyIndex)%isStr
+    else
+        call this%printSearchError(key, .TRUE.)
+    end if
+end function
+
+function isLogicalSLTableData(this, key) result(isLogical)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
+    character(len=*), intent(in)          :: key
+    logical                               :: isLogical
+    integer                               :: keyIndex
+    logical                               :: isExist
+    isLogical = .FALSE.
+    Call searchKeyIndex(this, key, keyIndex, isExist)
+    if (isExist) then
+        isLogical = this%dataArray(keyIndex)%isLog
+    else
+        call this%printSearchError(key, .TRUE.)
+    end if
+end function
+
 subroutine searchKeyIndex(this, key, keyIndex, isExist)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in)    :: this
+    character(len=*), intent(in)          :: key
+    integer,intent(out)                   :: keyIndex
+    logical,intent(out)                   :: isExist
+    integer :: ikey
+
+    !!... Optimization is needed !!!
+    isExist = .FALSE.
+
+    do ikey = 1, this%nKey
+        if (this%isKeyActive(ikey)) then    !! Acceletate Search
+            if (isStringEqual(trim(key), this%keys(ikey), this%strongSearch)) then
+                isExist = .TRUE.
+                keyIndex = ikey
+            end if
+        end if
+    enddo
+
+end subroutine
+
+
+subroutine searchKeyIndexAndAdd(this, key, keyIndex, isExist)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
     character(len=*), intent(in)          :: key
     integer,intent(out)                   :: keyIndex
     logical,intent(out)                   :: isExist
@@ -1297,7 +1413,7 @@ end subroutine
 
 subroutine printSearchError(this, key, errStop)
     Implicit None
-    class(typSLookUpTable), intent(inout) :: this
+    class(typSLookUpTable), intent(in) :: this
     Character(len=*), intent(in) :: key
     logical,optional :: errStop
 
@@ -1341,3 +1457,50 @@ Implicit None
     endif
 
 end subroutine
+
+Subroutine addSLTable(this, target)
+    Implicit None
+    Class(typSLookUpTable), intent(inout) :: this
+    Type(typSLookUpTable), intent(in)     :: target
+
+    integer :: iKey
+    Character(len=CHAR_LEN)             :: tmpKey
+
+    Real(RP), allocatable               :: tmpRealArray(:)
+    Integer, allocatable                :: tmpIntArray(:)
+    Character(len=CHAR_LEN),allocatable :: tmpCharArray(:)
+    logical,allocatable                 :: tmpLogicalArray(:)
+
+    do iKey = 1, target%nKey
+        tmpKey = target%getKey(iKey)
+
+        if (target%isNumber(tmpKey)) then
+
+            if (target%isInt(tmpKey)) then
+                Call target%getIntArray(tmpKey, tmpIntArray)
+                Call this%push(tmpKey, tmpIntArray)
+            else
+                Call target%getRealArray(tmpKey, tmpRealArray)
+                Call this%push(tmpKey, tmpRealArray)
+            end if
+
+        else if (target%isCharacter(tmpKey)) then
+
+            Call target%getCharArray(tmpKey, tmpCharArray)
+            Call this%push(tmpKey, tmpCharArray)
+
+        else if (target%isLogical(tmpKey)) then
+
+            Call target%getLogicalArray(tmpKey, tmpLogicalArray)
+            Call this%push(tmpKey, tmpLogicalArray)
+
+        end if
+
+    enddo
+
+    if (allocated(tmpRealArray)) deallocate(tmpRealArray)
+    if (allocated(tmpCharArray)) deallocate(tmpCharArray)
+    if (allocated(tmpLogicalArray)) deallocate(tmpLogicalArray)
+
+
+End Subroutine
