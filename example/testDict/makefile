@@ -8,8 +8,8 @@ EXES = main
 # FC      = ifort
 FC      = gfortran
 
-FLAGMOD1= -J $(DIR_OBJ)
-OPTSC0  = -c $(FLAGMOD1)
+FLAGMOD1= $(DIR_OBJ)
+OPTSC0  = $(FLAGMOD1)
 OPTSC = $(OPTSC0)
 
 CFLAGS = -fPIC -O2 -g -c
@@ -41,7 +41,7 @@ EXES := $(EXES)
 ### compiling rules ------------------------------------------------------------
 $(DOBJ)main.o: main.f90
 	@echo $(COTEXT)
-	@$(COMPILE_OBJECT_RULE) $< $(LDFLAGS) -o $@
+	@$(COMPILE_OBJECT_RULE) $< $(LDFLAGS)
 
 ### phony auxiliary rules ------------------------------------------------------
 .PHONY : cleanobj
