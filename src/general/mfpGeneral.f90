@@ -1,12 +1,12 @@
 !!*------------------------------------------------------------------*!!
-!!  Project : modDataStructure
+!!  Project : mfpDataStructure
 !!*------------------------------------------------------------------*!!
 !!
 !!  Fortran Module
-!!      data Structure
+!!      General
 !!
 !!  Description
-!!      Fortran Data Structure
+!!      FyMC Pack General Module
 !!
 !!  Authors
 !!      YoungMyung Choi, Ecole Centrale de Nantes
@@ -15,13 +15,13 @@
 !!*------------------------------------------------------------------*!!
 
 !! ------------------------------------------------------------------ !!
-!!  Module : modDataStructure
+!!  Module : FyMcPack Module General
 !! ------------------------------------------------------------------ !!
-Module  modDataStructure
+Module  mfpGeneral
 
 !!  Dependency ------------------------------------------------------ !!
 
-    use modGlobal
+    use mfpGlobal
 
 !!  Variable Declaration -------------------------------------------- !!
 
@@ -40,6 +40,8 @@ private
     integer, parameter :: fileLineLength = 2000
 
 !!  Header Files ---------------------------------------------------- !!
+
+    Include "string/stringI.typ"
 
     Include "string/string.typ"
 
@@ -60,6 +62,8 @@ private
 Contains
 
 !!  Procedure Files ------------------------------------------------- !!
+
+    Include "string/stringI.inc"
 
     Include "string/string.inc"
 

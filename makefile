@@ -69,15 +69,15 @@ compileObject: compileObj
 ### compiling rules ------------------------------------------------------------
 
 $(DIR_OBJ)main.o: $(DIR_SRC)main.f90 \
-	$(DIR_OBJ)modGlobal.o
+	$(DIR_OBJ)mfpGlobal.o
 	@echo $(COTEXT)
 	$(COMPILE_OBJECT_RULE) $< -o $@
 
 compileObj: \
-	$(DIR_OBJ)modGlobal.o
-	$(MAKE) createObj -f $(DIR_SRC)dataStructure/makefile
+	$(DIR_OBJ)mfpGlobal.o
+	$(MAKE) createObj -f $(DIR_SRC)general/makefile
 
-$(DIR_OBJ)modGlobal.o: $(DIR_SRC)modGlobal.f90
+$(DIR_OBJ)mfpGlobal.o: $(DIR_SRC)mfpGlobal.f90
 	@echo $(COTEXT)
 	$(COMPILE_OBJECT_RULE) $< -o $@
 

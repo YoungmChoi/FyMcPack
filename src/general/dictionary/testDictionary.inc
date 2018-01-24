@@ -74,6 +74,10 @@ Subroutine testDictPointer()
 
     Call subDict%print()
 
+    realArr = dictPtr%getRealOrDefault("arrR1", 3.0_RP)
+
+    write(*,*) realArr
+
     ! fileDir  = ""
     ! fileName = "testDict"
     ! fileExt  = ""

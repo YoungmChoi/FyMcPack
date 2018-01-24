@@ -1,7 +1,7 @@
     Program main
 
-        Use modGlobal
-        use modDataStructure
+        Use mfpGlobal
+        use mfpGeneral
 
     Implicit None
 

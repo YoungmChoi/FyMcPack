@@ -9,8 +9,8 @@ DIR_SUB_SRC:= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 ### Compiling Rules ------------------------------------------------------------
 
-createObj: $(DIR_OBJ)modDataStructure.o
+createObj: $(DIR_OBJ)mfpGeneral.o
 
-$(DIR_OBJ)modDataStructure.o: $(DIR_SUB_SRC)modDataStructure.f90
+$(DIR_OBJ)mfpGeneral.o: $(DIR_SUB_SRC)mfpGeneral.f90
 	@echo $(COTEXT)
 	$(COMPILE_OBJECT_RULE) $< -o $@

@@ -1,4 +1,4 @@
-Module modGlobal
+Module mfpGlobal
 Implicit None
 
     Integer,Parameter :: FIO_UNIT = 100

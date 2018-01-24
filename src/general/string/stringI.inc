@@ -1,96 +1,3 @@
-Subroutine setString(this, string, isTrim)
-    Implicit None
-    class(typString), intent(inout) :: this
-    Character(len=*), intent(in) :: string
-    logical,optional :: isTrim
-    integer :: nChar
-    character(len=len_trim(string)) tmpString
-
-    tmpString = string
-    this%str_ = ''
-    nChar = sizeof(tmpString)/ sizeof("a")
-
-    if (nChar.gt.CHAR_LEN) then
-        write(*,*) "    [WARNING] setString(string), string is longer than CHAR_LEN."
-        nChar = CHAR_LEN
-    end if
-
-    this%nStr_ = nChar
-    this%str_(1:this%nStr_) = string
-
-    if (present(isTrim)) then
-        if (isTrim) then
-            this%str_ = ""
-            Call compactChar(tmpString)
-            nChar = len_trim(tmpString)
-            this%nStr_ = nChar
-            this%str_(1:this%nStr_) = trim(string)
-        end if
-    end if
-
-End Subroutine
-
-Subroutine clearString(this)
-    Implicit None
-    class(typString), intent(inout) :: this
-    this%str_=""
-    this%nStr_=0
-End Subroutine
-
-function getString(this) result(string)
-    Implicit None
-    class(typString), intent(in) :: this
-    character(len=this%nStr_) :: string
-    string = this%str_(1:this%nStr_)
-End function
-
-function getStringLower(this) result(string)
-    !
-    !  Dr. George Benthiem's string subroutine
-    !
-    !       See. http://gbenthien.net/about.html
-    !
-    ! Removes backslash (\) characters. Double backslashes (\\) are replaced
-    ! by a single backslash.
-    !
-    !   Modified by Y.M Choi
-    !
-    class(typString), intent(in) :: this
-    character(len=this%nStr_)       :: string
-    CHARACTER          :: ch
-    INTEGER,PARAMETER  :: DUC = ICHAR('A') - ICHAR('a')
-    INTEGER            :: i
-    DO i = 1, this%nStr_
-        ch = this%str_(i:i)
-        IF (ch >= 'A'.AND.ch <= 'Z') ch = CHAR(ICHAR(ch)-DUC)
-        string(i:i) = ch
-    END DO
-end function
-
-function getStringUpper(this)  RESULT (string)
-    !
-    !  Dr. George Benthiem's string subroutine
-    !
-    !       See. http://gbenthien.net/about.html
-    !
-    ! Removes backslash (\) characters. Double backslashes (\\) are replaced
-    ! by a single backslash.
-    !
-    !   Modified by Y.M Choi
-    !
-    class(typString), intent(in) :: this
-    character(len=this%nStr_)       :: string
-    CHARACTER          :: ch
-    INTEGER,PARAMETER  :: DUC = ICHAR('A') - ICHAR('a')
-    INTEGER            :: i
-    DO i = 1, this%nStr_
-        ch = this%str_(i:i)
-        IF (ch >= 'a'.AND.ch <= 'z') ch = CHAR(ICHAR(ch)+DUC)
-        string(i:i) = ch
-    END DO
-
-END FUNCTION
-
 function isStringStringEqual(orgin, target, isStrongCompare) result(isEqual)
     Implicit None
     class(typString), intent(in) :: orgin
@@ -462,52 +369,6 @@ FUNCTION LowerChar(s1)  RESULT (s2)
     END DO
 END FUNCTION
 
-function getStringInt(this, isWeek) result(value)
-    Implicit None
-    Class(typString), intent(in) :: this
-    integer :: value
-    logical, optional :: isWeek
-    character(len=CHAR_LEN) :: dummyStr
-    integer  :: io
-    real(rp) :: valueR
-
-    if (present(isWeek)) then
-        if (isWeek.EQV..FALSE.) then
-            valueR = getStringReal(this)
-            value = int(valueR)
-
-        end if
-    else
-        dummyStr = trim(this%str_)
-        read(dummyStr, *, iostat = io) value
-        if (io.ne.0) then
-            write(*,*) "    [ERROR] string:getInt(), conversion failed."
-            write(*,*) "      given string : ", trim(this%str_)
-            value = 0.0_RP
-            stop
-        end if
-    end if
-
-end function
-
-function getStringReal(this) result(value)
-    Implicit None
-    Class(typString), intent(in) :: this
-    real(rp) :: value
-    real     :: dummyReal
-    integer  :: io
-    character(len=CHAR_LEN) :: dummyStr
-    dummyStr = trim(this%str_)
-    read(dummyStr, *, iostat = io) dummyReal
-    value = dummyReal
-    if (io.ne.0) then
-        write(*,*) "    [ERROR] string:getReal(), conversion failed."
-        write(*,*) "      given string : ", trim(this%str_)
-        value = 0.0_RP
-        stop
-    end if
-end function
-
 function replaceString(str, text, replaceText) result(repStr)
     implicit none
     type(typString), intent(in)  :: str
@@ -544,16 +405,6 @@ Implicit None
         repStr = repStr(:irep-1) // replaceText(:nRep) // repStr(irep+nText:)
     enddo
 end function
-
-subroutine copyString(origin, target)
-Implicit None
-    Class(typString), intent(inout) :: origin
-    Type(typString), intent(in)     :: target
-
-    origin%nStr_ = target%nStr_
-    origin%str_  = target%str_
-
-end subroutine
 
 subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag, iflag)
 !!----------------------------------------------------------------------------------
@@ -644,17 +495,6 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
     end if
 
 end subroutine
-
-function stringHeader(this) result(value)
-    class(typString), intent(in) :: this
-    integer                      :: value
-    !!... Local Variable
-    character(len=CHAR_LEN)      :: tmpChar
-
-    tmpChar = this%get()
-    value = charHeader(tmpChar)
-
-end function
 
 function charHeader(this) result(value)
     character(len=CHAR_LEN), intent(in) :: this
@@ -985,3 +825,14 @@ Subroutine readMakeCharArrayFromFile(fileIndex, subCharArray, nLine, charStart, 
     if (allocated(tmpCharArray)) deallocate(tmpCharArray)
 
 End Subroutine
+
+function stringHeader(this) result(value)
+    class(typString), intent(in) :: this
+    integer                      :: value
+    !!... Local Variable
+    character(len=CHAR_LEN)      :: tmpChar
+
+    tmpChar = this%get()
+    value = charHeader(tmpChar)
+
+end function

@@ -45,6 +45,12 @@ Contains
     !!... Get Real Array
     procedure, pass, public :: getRealArray => getDictRealArray
 
+    !!... Get Int Values
+    procedure, pass, public :: getInt => getDictint
+
+    !!... Get Int Array
+    procedure, pass, public :: getIntArray => getDictIntArray
+
     !!... Get Char Values
     procedure, pass, public :: getChar => getDictChar
 
@@ -62,6 +68,36 @@ Contains
 
     !!... Get Logical Array
     procedure, pass, public :: getLogicalArray => getDictLogicalArray
+
+    !!... Get Real Values or set value with given value if key is not exist
+    procedure, pass, public :: getRealOrDefault => getDictRealOrDefault
+
+    !!... Get Real Array or set value with given value if key is not exist
+    procedure, pass, public :: getRealArrayOrDefault => getDictRealArrayOrDefault
+
+    !!... Get Int Values or set value with given value if key is not exist
+    procedure, pass, public :: getIntOrDefault => getDictintOrDefault
+
+    !!... Get Int Array or set value with given value if key is not exist
+    procedure, pass, public :: getIntArrayOrDefault => getDictIntArrayOrDefault
+
+    !!... Get Char Values or set value with given value if key is not exist
+    procedure, pass, public :: getCharOrDefault => getDictCharOrDefault
+
+    !!... Get Char Array or set value with given value if key is not exist
+    procedure, pass, public :: getCharArrayOrDefault => getDictCharArrayOrDefault
+
+    !!... Get String Values or set value with given value if key is not exist
+    procedure, pass, public :: getStringOrDefault => getDictStringOrDefault
+
+    !!... Get String Array or set value with given value if key is not exist
+    procedure, pass, public :: getStringArrayOrDefault => getDictStringArrayOrDefault
+
+    !!... Get Logical Values or set value with given value if key is not exist
+    procedure, pass, public :: getLogicalOrDefault => getDictLogicalOrDefault
+
+    !!... Get Logical Array or set value with given value if key is not exist
+    procedure, pass, public :: getLogicalArrayOrDefault => getDictLogicalArrayOrDefault
 
 
 End Type
