@@ -183,22 +183,22 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
                                 do
 
                                     !! Search Dictionary in parent dictionary
-                                    isKeyExist = dictDB(tmpParentDictID)%sLTable%keyExist(shortKey)
+                                    isKeyExist = dictDB(tmpParentDictID)%sLTable%keyExist(shortKey)                                    
 
                                     if (isKeyExist) then
 
-                                        if (dictDB(dictID)%sLTable%isNumber(shortKey)) then
+                                        if (dictDB(tmpParentDictID)%sLTable%isNumber(shortKey)) then
 
                                             !! Get Real Array
-                                            Call dictDB(dictID)%sLTable%getRealArray(shortKey, tmpKeyRArg)
+                                            Call dictDB(tmpParentDictID)%sLTable%getRealArray(shortKey, tmpKeyRArg)
 
                                             !! Push Real Array
                                             Call dictDB(dictID)%sLTable%push(keySaved, tmpKeyRArg)
 
-                                        else if (dictDB(dictID)%sLTable%isCharacter(shortKey)) then
+                                        else if (dictDB(tmpParentDictID)%sLTable%isCharacter(shortKey)) then
 
                                             !! Get Character Array
-                                            Call dictDB(dictID)%sLTable%getCharArray(shortKey, tmpKeyCArg)
+                                            Call dictDB(tmpParentDictID)%sLTable%getCharArray(shortKey, tmpKeyCArg)
 
                                             !! Push Character Array
                                             Call dictDB(dictID)%sLTable%push(keySaved, tmpKeyCArg)

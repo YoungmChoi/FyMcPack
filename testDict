@@ -30,6 +30,8 @@
             human jungHyun;
 
             $dict3
+            
+            p       $planet;
         }
 
     }
