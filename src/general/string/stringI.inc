@@ -802,7 +802,7 @@ Subroutine readMakeCharArrayFromFile(fileIndex, subCharArray, nLine, charStart, 
 
         if (isCharActive) then
             nn = nn + 1
-            if (nLine.eq.1) then
+            if (nn.eq.1) then
                 allocate( subCharArray(1) )
                 subCharArray(1) = tmpLine
             else

@@ -19,7 +19,7 @@ export FC=gfortran
 #export FC=ifort
 
 # C flags
-export CFLAGS = -fPIC -O2 -g
+export CFLAGS = -fPIC -O2 -g -fbounds-check
 
 # linking flags
 export LDFLAGS = -fPIC -O2 -c
@@ -37,7 +37,7 @@ export MKDIRS  = $(DIR_OBJ) $(DIR_LIB)
 export OPTSC = $(OPTSC0)
 export OPTSL = $(OPTSL0)
 
-export COMPILE_OBJECT_RULE=@$(FC) $(CFLAGS) $(OPTSC) -o $@
+export COMPILE_OBJECT_RULE=@$(FC) $(CFLAGS) $(OPTSC)
 
 ### Targets for compilation ----------------------------------------------------
 
@@ -45,13 +45,13 @@ Release: cleanall
 Release: $(MKDIRS)
 Release: compileObject
 Release: main
-Release: cleanCompileObj
+#Release: cleanCompileObj
 
 lib: cleanall
 lib: $(MKDIRS)
 lib: compileObject
 lib: makelib
-lib: cleanCompileObj
+#lib: cleanCompileObj
 
 ### auxiliary variables --------------------------------------------------------
 COTEXT  = " - Compile  : '$(<F)'"
@@ -93,7 +93,7 @@ cleanCompileObj:
 .PHONY : $(MKDIRS)
 $(MKDIRS):
 	@mkdir -p $@
-	
+
 .PHONY : cleanobj
 cleanobj:
 	@echo deleting objects

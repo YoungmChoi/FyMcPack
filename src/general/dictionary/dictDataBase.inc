@@ -8,8 +8,7 @@ Subroutine initializeDictDataBase(dictName, dictID, parentDictID)
     integer :: i
     Character(len=len_trim(dictName)) :: tmpDictName
     !! ------------------------------------------------------------------------
-    if (sizeof(dictDBActive).eq.0) then
-        nDictDB_ = 0
+    if (nDictDB_.eq.0) then
         allocate(dictDB(1))
         allocate(dictDBActive(1))
     else
@@ -45,7 +44,6 @@ Subroutine initializeDictDataBase(dictName, dictID, parentDictID)
 
     tmpDictName = dictName
 
-
     Call compactChar(tmpDictName)
 
     nDictDB_ = nDictDB_ + 1
@@ -68,7 +66,7 @@ End Subroutine
 
 Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, parentDictID)
     Implicit None
-    Character(len=CHAR_LEN), intent(in)                    :: dictName
+    Character(len=*), intent(in)                           :: dictName
     Character(len=fileLineLength),dimension(:), intent(in) :: charArray
     Integer, intent(out)                                   :: dictID
     integer, optional                                      :: parentDictID
@@ -183,7 +181,7 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
                                 do
 
                                     !! Search Dictionary in parent dictionary
-                                    isKeyExist = dictDB(tmpParentDictID)%sLTable%keyExist(shortKey)                                    
+                                    isKeyExist = dictDB(tmpParentDictID)%sLTable%keyExist(shortKey)
 
                                     if (isKeyExist) then
 

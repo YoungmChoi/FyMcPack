@@ -34,7 +34,7 @@ end type typString
 
 Character(len=7), parameter, private :: specialCharacter = ";(){}[]"
 
-integer, parameter, private :: nSpecialCharacter = 8    !! It should be same with length of specialCharacter
+integer, parameter, private :: nSpecialCharacter = 7    !! It should be same with length of specialCharacter
 
 Character(len=2), parameter, private :: commentBlockStart = "/*"
 

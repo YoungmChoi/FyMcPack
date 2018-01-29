@@ -123,8 +123,11 @@
         sumArea = 0.0_RP
         do i = 1, this%nNode_
             iNode = this%nodeLabel_(i)
-            jNode = this%nodeLabel_(i + 1)
-            if (i.eq.this%nNode_) jNode = this%nodeLabel_(1)
+            if (i.eq.this%nNode_) then
+                jNode = this%nodeLabel_(1)
+            else
+                jNode = this%nodeLabel_(i + 1)
+            end if
 
             vec1(1) = nodes(iNode)%x() - xc; vec1(2)  = nodes(iNode)%y() - yc; vec1(3)  = nodes(iNode)%z() - zc
             vec2(1) = nodes(jNode)%x() - xc; vec2(2)  = nodes(jNode)%y() - yc; vec2(3)  = nodes(jNode)%z() - zc
