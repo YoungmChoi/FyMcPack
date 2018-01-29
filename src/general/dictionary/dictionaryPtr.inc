@@ -86,13 +86,14 @@ function subDictionaryPtr(this, subDictName) result(ptrSubDict)
 
 end function
 
-Function getDictReal(this, key) result(value)
+Function getDictReal(this, key, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
+    integer,optional                     :: ivar
     real(rp)                             :: value
 
-    Call this%ptrDict%sLTable%getReal(key, value)
+    Call this%ptrDict%sLTable%getReal(key, value, ivar)
 
 End Function
 
@@ -106,13 +107,14 @@ Function getDictRealArray(this, key) result(value)
 
 End Function
 
-Function getDictInt(this, key) result(value)
+Function getDictInt(this, key, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
+    integer,optional                     :: ivar
     integer                              :: value
 
-    Call this%ptrDict%sLTable%getInt(key, value)
+    Call this%ptrDict%sLTable%getInt(key, value, ivar)
 
 End Function
 
@@ -126,13 +128,14 @@ Function getDictIntArray(this, key) result(value)
 
 End Function
 
-Function getDictChar(this, key) result(value)
+Function getDictChar(this, key, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
+    integer,optional                     :: ivar
     Character(len=CHAR_LEN)              :: value
 
-    Call this%ptrDict%sLTable%getChar(key, value)
+    Call this%ptrDict%sLTable%getChar(key, value, ivar)
 
 End Function
 
@@ -146,13 +149,14 @@ Function getDictCharArray(this, key) result(value)
 
 End Function
 
-Function getDictString(this, key) result(value)
+Function getDictString(this, key, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
+    integer,optional                     :: ivar
     type(typString)                      :: value
 
-    Call this%ptrDict%sLTable%getString(key, value)
+    Call this%ptrDict%sLTable%getString(key, value, ivar)
 
 End Function
 
@@ -166,13 +170,14 @@ Function getDictStringArray(this, key) result(value)
 
 End Function
 
-Function getDictLogical(this, key) result(value)
+Function getDictLogical(this, key, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
+    integer,optional                     :: ivar
     logical                              :: value
 
-    Call this%ptrDict%sLTable%getLogical(key, value)
+    Call this%ptrDict%sLTable%getLogical(key, value, ivar)
 
 End Function
 
@@ -186,15 +191,16 @@ Function getDictLogicalArray(this, key) result(value)
 
 End Function
 
-Function getDictRealOrDefault(this, key, defaultValue) result(value)
+Function getDictRealOrDefault(this, key, defaultValue, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
     real(rp), intent(in)                 :: defaultValue
+    integer,optional                     :: ivar
     real(rp)                             :: value
 
     if (this%ptrDict%sLTable%keyExist(key)) then
-        Call this%ptrDict%sLTable%getReal(key, value)
+        Call this%ptrDict%sLTable%getReal(key, value, ivar)
     else
         value = defaultValue
     end if
@@ -216,15 +222,16 @@ Function getDictRealArrayOrDefault(this, key, defaultValue) result(value)
 
 End Function
 
-Function getDictIntOrDefault(this, key, defaultValue) result(value)
+Function getDictIntOrDefault(this, key, defaultValue, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
     integer,intent(in)                   :: defaultValue
+    integer,optional                     :: ivar
     integer                              :: value
 
     if (this%ptrDict%sLTable%keyExist(key)) then
-        Call this%ptrDict%sLTable%getInt(key, value)
+        Call this%ptrDict%sLTable%getInt(key, value, ivar)
     else
         value = defaultValue
     end if
@@ -246,15 +253,16 @@ Function getDictIntArrayOrDefault(this, key, defaultValue) result(value)
 
 End Function
 
-Function getDictCharOrDefault(this, key, defaultValue) result(value)
+Function getDictCharOrDefault(this, key, defaultValue, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
     Character(len=*),intent(in)          :: defaultValue
+    integer,optional                     :: ivar
     Character(len=CHAR_LEN)              :: value
 
     if (this%ptrDict%sLTable%keyExist(key)) then
-        Call this%ptrDict%sLTable%getChar(key, value)
+        Call this%ptrDict%sLTable%getChar(key, value, ivar)
     else
         value = ""
         value = defaultValue
@@ -278,15 +286,16 @@ Function getDictCharArrayOrDefault(this, key, defaultValue) result(value)
 
 End Function
 
-Function getDictStringOrDefault(this, key, defaultValue) result(value)
+Function getDictStringOrDefault(this, key, defaultValue, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
     type(typString),intent(in)           :: defaultValue
+    integer,optional                     :: ivar
     type(typString)                      :: value
 
     if (this%ptrDict%sLTable%keyExist(key)) then
-        Call this%ptrDict%sLTable%getString(key, value)
+        Call this%ptrDict%sLTable%getString(key, value, ivar)
     else
         value = defaultValue
     end if
@@ -308,15 +317,16 @@ Function getDictStringArrayOrDefault(this, key, defaultValue) result(value)
 
 End Function
 
-Function getDictLogicalOrDefault(this, key, defaultValue) result(value)
+Function getDictLogicalOrDefault(this, key, defaultValue, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
     Character(len=*),intent(in)          :: key
     logical, intent(in)                  :: defaultValue
+    integer,optional                     :: ivar
     logical                              :: value
 
     if (this%ptrDict%sLTable%keyExist(key)) then
-        Call this%ptrDict%sLTable%getLogical(key, value)
+        Call this%ptrDict%sLTable%getLogical(key, value, ivar)
     else
         value = defaultValue
     end if
