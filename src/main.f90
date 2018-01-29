@@ -1,7 +1,7 @@
     Program main
 
         Use mfpGlobal
-        ! use mfpGeneral
+        use mfpGeneral
         use mfpGeometry
 
     Implicit None
@@ -10,7 +10,7 @@
 
             ! Call testString()
 
-            Call testDictionary
+            ! Call testDictionary
 
             ! Call testSLTable()
 
@@ -21,6 +21,6 @@
 
         !!... Test Geometry
 
-            ! Call testSurfMesh()
+            Call testSurfMesh()
 
     End Program

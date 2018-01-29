@@ -38,7 +38,14 @@
     contains
 
         !! Initialize Sphere Mesh
-        procedure, pass, public :: initialize => initializeHemiSphereMesh
+        procedure, pass, private :: initializeHemiSphereMesh
+
+        !! Initialize Sphere Mesh with Dictionary
+        procedure, pass, private :: initializeHemiSphereMeshDict
+
+        !! Constructor
+        generic :: initialize => initializeHemiSphereMesh, &
+                                 initializeHemiSphereMeshDict
 
     End Type
 

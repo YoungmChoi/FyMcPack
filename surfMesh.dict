@@ -1,14 +1,71 @@
 
 
+surfaceMesh
+{
+    type                sphere;
 
-ellipsoid
-{   
-    halfAxis        ( 5.0_RP  2.0_RP  1.0_RP);
-    numberOfMesh    ( 15       10       5);    
-    center          ( 0.0_RP  0.0_RP   -0.5_RP);
+    writeVTK            true;
+    writeLog            true;
+    nSubLine            5;
 
-    writeLog        false;
+    ellipsoid
+    {
+        halfAxis        ( 5.0  2.0  2.0);
+        numberOfMesh    ( 15       10   5 );
+        center          ( 0.0  0.0   -0.5);
 
-    writeVTK        false;   
+        writeLog        $writeLog;
+    }
+
+    hemiSphere
+    {
+        radius          1.0;
+
+        nR              15;
+        nZ              10;
+
+        center          ( 0.0  0.0   -0.5);
+
+        nSubLine        $nSubLine;
+
+        writeLog        $writeLog;
+    }
+
+    paraPipe
+    {
+        length          ( 5.0   3.0    2.0);
+        numberOfMesh    ( 15    10      5 );
+        center          ( 0.0  0.0    -2.5);
+
+        meshRatio       (1.0    1.0     1.0);
+
+        isTopOpen       true;
+
+        nSubLine        $nSubLine;
+
+        writeLog        $writeLog;
+    }
+
+    semiEllipsoid
+    {
+        halfAxis        ( 5.0  2.0  2.0);
+        numberOfMesh    ( 15       10   5 );
+        center          ( 0.0   0.0   0.0);
+
+        nSubLine        $nSubLine;
+        writeLog        $writeLog;
+    }
+
+    sphere
+    {
+        radius          1.0;
+
+        nR              15;
+        nZ              10;
+
+        center          ( 0.0  2.0  3.0);
+
+        writeLog        $writeLog;
+    }
 
 }

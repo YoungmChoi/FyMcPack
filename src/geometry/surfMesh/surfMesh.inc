@@ -2,206 +2,290 @@
 !! Procedures : Type surfMesh
 !! ------------------------------------------------------------------ !!
 
-    Subroutine writeVTK(this, filePath, suffix)
-        Implicit None
-        class(typSurfMesh), intent(inout) :: this
-        Character(len=*),intent(in) :: filePath
-        Character(len=*),intent(in) :: suffix
-        Character(len=CHAR_LEN) :: surfMeshPath, lineMeshPath
+Subroutine initializeSurfMesh(surfMesh, dict)
+    Implicit None
+    class(typSurfMesh), allocatable :: surfMesh
+    Type(typDictionaryPtr)          :: dict
+    !!... Local Variables
+    Type(typParaPipeMesh)           :: paraPipeMesh
+    Type(typSphereSurfMesh)         :: sphereMesh
+    Type(typHemiSphereSurfMesh)     :: hSphereMesh
+    Type(typEllipsoidSurfMesh)      :: ellipsoidMesh
+    Type(typSemiEllipsoidSurfMesh)  :: semiEllipsoidMesh
 
-        surfMeshPath = trim(filePath)//"."//trim(suffix)
-        lineMeshPath = trim(filePath)//"_line."//trim(suffix)
+    Character(len=CHAR_LEN) :: surfaceType
+    Logical :: isWriteVTK
 
-        Call writeVTKSurfMesh(this, surfMeshPath)
+    if (allocated(surfMesh)) deallocate(surfMesh)
 
-        if (this%isOpenTop) then
-        Call writeVTKLineMesh(this, lineMeshPath)
-        end if
+    surfaceType = dict%getChar("type")
 
-    End Subroutine
+    !!... ParaPipe Mesh
+    if (isStringEqual(surfaceType,"paraPipe")) then
 
-    Subroutine writeVTKSurfMesh(this, filePath)
-        Implicit None
-        class(typSurfMesh), intent(inout) :: this
-        Character(len=*)           :: filePath
-        integer :: ioUnit
-        integer :: i,j
-        Integer :: nConnect
+        !! Initialize with dictionary
+        Call paraPipeMesh%initialize(dict%subDict("paraPipe"))
 
-        ioUnit = FIO_UNIT + 1
+        !! Surface Mesh Pointer (Up-casting)
+        allocate(surfMesh, source = paraPipeMesh)
 
-        Open(unit   = ioUnit,   &
-             file   = trim(filePath), &
-             status = "replace")
+    !!... Sphere Mesh
+    else if (isStringEqual(surfaceType,"Sphere")) then
 
-        write(ioUnit,1001) "# vtk DataFile Version 3.0"
-        write(ioUnit,1001) "vtk output"
-        write(ioUnit,1001) "ASCII"
-        write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+        !! Initialize with dictionary
+        Call sphereMesh%initialize(dict%subDict("sphere"))
 
-        write(ioUnit,1002) "POINTS ", this%nNode, " float"
-        do i = 1, this%nNode
-        write(ioUnit,1003) this%node(i)%x(), this%node(i)%y(), this%node(i)%z()
-        enddo
+        !! Surface Mesh Pointer (Up-casting)
+        allocate(surfMesh, source = sphereMesh)
 
-        nConnect = 0
-        do i =1, this%nPanel
-            nConnect = nConnect + this%panel(i)%nNode() + 1
-        enddo
+    !!... HemiSphere Mesh
+    else if (isStringEqual(surfaceType,"hemiSphere")) then
 
-        write(ioUnit,1004) "CELLS ", this%nPanel, nConnect
-        do i = 1, this%nPanel
-        write(ioUnit,1005) this%panel(i)%nNode(), &
-                          (this%panel(i)%nodeLabel(j) - 1, j = 1,this%panel(i)%nNode())
-        enddo
+        !! Initialize with dictionary
+        Call hSphereMesh%initialize(dict%subDict("hemiSphere"))
 
-        write(ioUnit,1002) "CELL_TYPES ", this%nPanel
-        do i = 1, this%nPanel
-        write(ioUnit,1006) this%panel(i)%vtkCellType()
-        enddo
+        !! Surface Mesh Pointer (Up-casting)
+        allocate(surfMesh, source = hSphereMesh)
 
-        write(ioUnit,1002) "CELL_DATA ", this%nPanel
-        write(ioUnit,1001) "SCALARS Panel_Area float"
-        write(ioUnit,1001) "LOOKUP_TABLE default"
-        do i = 1, this%nPanel
-        write(ioUnit,1003) this%panel(i)%area()
-        enddo
-        write(ioUnit,1001) "NORMALS Panel_Normal float"
-        do i = 1, this%nPanel
-        write(ioUnit,1003) this%panel(i)%normal%x(), this%panel(i)%normal%y(), this%panel(i)%normal%z()
-        enddo
+    !!... Ellipsoid Mesh
+    else if (isStringEqual(surfaceType,"Ellipsoid")) then
 
-        Close(ioUnit)
+        !! Initialize with dictionary
+        Call ellipsoidMesh%initialize(dict%subDict("ellipsoid"))
 
-        1001 format(a)
-        1002 format(a,i15,a)
-        1003 format(3(e15.7))
-        1004 format(a,2(i15))
-        1005 format(i5,99(i8))
-        1006 format(i5)
+        !! Surface Mesh Pointer (Up-casting)
+        allocate(surfMesh, source = ellipsoidMesh)
 
-    End Subroutine
+    !!... Semi - Ellipsoid Mesh
+    else if (isStringEqual(surfaceType,"SemiEllipsoid")) then
 
-    Subroutine writeVTKLineMesh(this, filePath)
-        Implicit None
-        class(typSurfMesh), intent(inout) :: this
-        Character(len=*)           :: filePath
-        integer :: ioUnit
-        integer :: i,j
-        Integer :: nConnect
+        !! Initialize with dictionary
+        Call semiEllipsoidMesh%initialize(dict%subDict("semiEllipsoid"))
 
-        ioUnit = FIO_UNIT + 1
+        !! Surface Mesh Pointer (Up-casting)
+        allocate(surfMesh, source = semiEllipsoidMesh)
 
-        Open(unit   = ioUnit,   &
-             file   = trim(filePath), &
-             status = "replace")
+    else
+        write(*,*) " "
+        write(*,*) "    [ERROR] initializeSurfMesh(this, dict)."
+        write(*,*) "        no Surface Type is selected."
+        write(*,*) "    given type : ", trim(surfaceType)
+        write(*,*) " "
+        stop
+    end if
 
-        write(ioUnit,1001) "# vtk DataFile Version 3.0"
-        write(ioUnit,1001) "vtk output"
-        write(ioUnit,1001) "ASCII"
-        write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+    !!... Write VTk
+    if (allocated(surfMesh)) then
+        isWriteVTK = dict%getLogicalOrDefault("writeVTK",.TRUE.)
+        Call SYSTEM('mkdir -p surfaceMeshVTK')
+        Call surfMesh%writeVTK("surfaceMeshVTK/"//trim(surfaceType))
+    end if
 
-        write(ioUnit,1002) "POINTS ", this%nLineNode, " float"
-        do i = 1, this%nLineNode
-        write(ioUnit,1003) this%lineNode(i)%x(), this%lineNode(i)%y(), this%lineNode(i)%z()
-        enddo
+End Subroutine
 
-        write(ioUnit,1004) "CELLS ", this%nLine, this%nLine * 3
-        do i = 1, this%nLine
-        write(ioUnit,1005) this%linePanel(i)%nNode(),           &
-                           (this%linePanel(i)%nodeLabel(j)-1, j = 1, this%linePanel(i)%nNode())
-        enddo
+Subroutine writeVTK(this, filePath)
+    Implicit None
+    class(typSurfMesh), intent(inout) :: this
+    Character(len=*),intent(in) :: filePath
+    Character(len=CHAR_LEN) :: surfMeshPath, lineMeshPath
 
-        write(ioUnit,1002) "CELL_TYPES ", this%nLine
-        do i = 1, this%nLine
-        write(ioUnit,1006) this%linePanel(i)%vtkCellType()
-        enddo
+    surfMeshPath = trim(filePath)//".vtk"
+    lineMeshPath = trim(filePath)//"_line.vtk"
 
-        write(ioUnit,1002) "CELL_DATA ", this%nLine
-        write(ioUnit,1001) "SCALARS Panel_Area float"
-        write(ioUnit,1001) "LOOKUP_TABLE default"
-        do i = 1, this%nLine
-        write(ioUnit,1003) this%linePanel(i)%area()
-        enddo
-        write(ioUnit,1001) "NORMALS Panel_Normal float"
-        do i = 1, this%nLine
-        write(ioUnit,1003) this%linePanel(i)%normal%x(), this%linePanel(i)%normal%y(), this%linePanel(i)%normal%z()
-        enddo
+    Call writeVTKSurfMesh(this, surfMeshPath)
 
-        Close(ioUnit)
+    if (this%isOpenTop) then
+    Call writeVTKLineMesh(this, lineMeshPath)
+    end if
 
-        1001 format(a)
-        1002 format(a,i15,a)
-        1003 format(3(e15.7))
-        1004 format(a,2(i15))
-        1005 format(i5,4(i8))
-        1006 format(i5)
+End Subroutine
 
-    End Subroutine
+Subroutine writeVTKSurfMesh(this, filePath)
+    Implicit None
+    class(typSurfMesh), intent(inout) :: this
+    Character(len=*)           :: filePath
+    integer :: ioUnit
+    integer :: i,j
+    Integer :: nConnect
 
-    Subroutine assignCopySurfMesh(to, from)
-        class(typSurfMesh), intent(inout) :: to
-        class(typSurfMesh), intent(in)    :: from
+    ioUnit = FIO_UNIT + 1
 
-        to%isOpenTop = from%isOpenTop
-        to%nNode     = from%nNode
-        to%nLineNode = from%nLineNode
-        to%nPanel    = from%nPanel
-        to%nLine     = from%nLine
-        to%nLineSub  = from%nLineSub
+    Open(unit   = ioUnit,   &
+         file   = trim(filePath), &
+         status = "replace")
 
-        if (to%nNode.gt.0) then
-            allocate(to%node( to%nNode ))
-            to%node = from%node
-        end if
+    write(ioUnit,1001) "# vtk DataFile Version 3.0"
+    write(ioUnit,1001) "vtk output"
+    write(ioUnit,1001) "ASCII"
+    write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
 
-        if (to%nPanel.gt.0) then
-            allocate(to%panel( to%nPanel ))
-            to%panel = from%panel
-        end if
+    write(ioUnit,1002) "POINTS ", this%nNode, " float"
+    do i = 1, this%nNode
+    write(ioUnit,1003) this%node(i)%x(), this%node(i)%y(), this%node(i)%z()
+    enddo
 
-        if (to%nLineNode.gt.0) then
-            allocate(to%lineNode( to%nLineNode ))
-            to%lineNode = from%lineNode
-        endif
+    nConnect = 0
+    do i =1, this%nPanel
+        nConnect = nConnect + this%panel(i)%nNode() + 1
+    enddo
 
-        if (to%nLine.gt.0) then
-            allocate(to%linePanel( to%nLine ))
-            to%linePanel = from%linePanel
-        end if
+    write(ioUnit,1004) "CELLS ", this%nPanel, nConnect
+    do i = 1, this%nPanel
+    write(ioUnit,1005) this%panel(i)%nNode(), &
+                      (this%panel(i)%nodeLabel(j) - 1, j = 1,this%panel(i)%nNode())
+    enddo
 
-    End Subroutine
+    write(ioUnit,1002) "CELL_TYPES ", this%nPanel
+    do i = 1, this%nPanel
+    write(ioUnit,1006) this%panel(i)%vtkCellType()
+    enddo
 
-    Subroutine destroySurfMesh(this)
-        Implicit None
-        Class(typSurfMesh), intent(inout) :: this
-        integer :: i
+    write(ioUnit,1002) "CELL_DATA ", this%nPanel
+    write(ioUnit,1001) "SCALARS Panel_Area float"
+    write(ioUnit,1001) "LOOKUP_TABLE default"
+    do i = 1, this%nPanel
+    write(ioUnit,1003) this%panel(i)%area()
+    enddo
+    write(ioUnit,1001) "NORMALS Panel_Normal float"
+    do i = 1, this%nPanel
+    write(ioUnit,1003) this%panel(i)%normal%x(), this%panel(i)%normal%y(), this%panel(i)%normal%z()
+    enddo
 
-        ! if (allocated(this%panel)) then
-        !     do i = 1, this%nPanel
-        !         Call this%panel(i)%destroy()
-        !     enddo
-        !     deallocate(this%panel)
-        ! end if
-        !
-        ! if (allocated(this%linePanel)) then
-        !     do i = 1, this%nPanel
-        !         Call this%linePanel(i)%destroy()
-        !     enddo
-        !     deallocate(this%linePanel)
-        ! end if
+    Close(ioUnit)
 
-        this%isOpenTop = .FALSE.
-        this%nNode     = 0;     this%nLineNode = 0;     this%nPanel     = 0;
-        this%nLine = 0;         this%nLineSub = 0;
+    1001 format(a)
+    1002 format(a,i15,a)
+    1003 format(3(e15.7))
+    1004 format(a,2(i15))
+    1005 format(i5,99(i8))
+    1006 format(i5)
 
-    End Subroutine
+End Subroutine
 
-    Subroutine finalSurfMesh(this)
-        Implicit None
-        Type(typSurfMesh), intent(inout) :: this
-        Call this%destroy()
-    End Subroutine
+Subroutine writeVTKLineMesh(this, filePath)
+    Implicit None
+    class(typSurfMesh), intent(inout) :: this
+    Character(len=*)           :: filePath
+    integer :: ioUnit
+    integer :: i,j
+    Integer :: nConnect
+
+    ioUnit = FIO_UNIT + 1
+
+    Open(unit   = ioUnit,   &
+         file   = trim(filePath), &
+         status = "replace")
+
+    write(ioUnit,1001) "# vtk DataFile Version 3.0"
+    write(ioUnit,1001) "vtk output"
+    write(ioUnit,1001) "ASCII"
+    write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+
+    write(ioUnit,1002) "POINTS ", this%nLineNode, " float"
+    do i = 1, this%nLineNode
+    write(ioUnit,1003) this%lineNode(i)%x(), this%lineNode(i)%y(), this%lineNode(i)%z()
+    enddo
+
+    write(ioUnit,1004) "CELLS ", this%nLine, this%nLine * 3
+    do i = 1, this%nLine
+    write(ioUnit,1005) this%linePanel(i)%nNode(),           &
+                       (this%linePanel(i)%nodeLabel(j)-1, j = 1, this%linePanel(i)%nNode())
+    enddo
+
+    write(ioUnit,1002) "CELL_TYPES ", this%nLine
+    do i = 1, this%nLine
+    write(ioUnit,1006) this%linePanel(i)%vtkCellType()
+    enddo
+
+    write(ioUnit,1002) "CELL_DATA ", this%nLine
+    write(ioUnit,1001) "SCALARS Panel_Area float"
+    write(ioUnit,1001) "LOOKUP_TABLE default"
+    do i = 1, this%nLine
+    write(ioUnit,1003) this%linePanel(i)%area()
+    enddo
+    write(ioUnit,1001) "NORMALS Panel_Normal float"
+    do i = 1, this%nLine
+    write(ioUnit,1003) this%linePanel(i)%normal%x(), this%linePanel(i)%normal%y(), this%linePanel(i)%normal%z()
+    enddo
+
+    Close(ioUnit)
+
+    1001 format(a)
+    1002 format(a,i15,a)
+    1003 format(3(e15.7))
+    1004 format(a,2(i15))
+    1005 format(i5,4(i8))
+    1006 format(i5)
+
+End Subroutine
+
+Subroutine assignCopySurfMesh(to, from)
+    class(typSurfMesh), intent(inout) :: to
+    class(typSurfMesh), intent(in)    :: from
+
+    to%isOpenTop = from%isOpenTop
+    to%nNode     = from%nNode
+    to%nLineNode = from%nLineNode
+    to%nPanel    = from%nPanel
+    to%nLine     = from%nLine
+    to%nLineSub  = from%nLineSub
+
+    if (to%nNode.gt.0) then
+        if (allocated(to%node)) deallocate(to%node)
+        allocate(to%node( to%nNode ))
+        to%node = from%node
+    end if
+
+    if (to%nPanel.gt.0) then
+        if (allocated(to%panel)) deallocate(to%panel)
+        allocate(to%panel( to%nPanel ))
+        to%panel = from%panel
+    end if
+
+    if (to%nLineNode.gt.0) then
+        if (allocated(to%lineNode)) deallocate(to%lineNode)
+        allocate(to%lineNode( to%nLineNode ))
+        to%lineNode = from%lineNode
+    endif
+
+    if (to%nLine.gt.0) then
+        if (allocated(to%linePanel)) deallocate(to%linePanel)
+        allocate(to%linePanel( to%nLine ))
+        to%linePanel = from%linePanel
+    end if
+
+End Subroutine
+
+Subroutine destroySurfMesh(this)
+    Implicit None
+    Class(typSurfMesh), intent(inout) :: this
+    integer :: i
+
+    ! if (allocated(this%panel)) then
+    !     do i = 1, this%nPanel
+    !         Call this%panel(i)%destroy()
+    !     enddo
+    !     deallocate(this%panel)
+    ! end if
+    !
+    ! if (allocated(this%linePanel)) then
+    !     do i = 1, this%nPanel
+    !         Call this%linePanel(i)%destroy()
+    !     enddo
+    !     deallocate(this%linePanel)
+    ! end if
+
+    this%isOpenTop = .FALSE.
+    this%nNode     = 0;     this%nLineNode = 0;     this%nPanel     = 0;
+    this%nLine = 0;         this%nLineSub = 0;
+
+End Subroutine
+
+Subroutine finalSurfMesh(this)
+    Implicit None
+    Type(typSurfMesh), intent(inout) :: this
+    Call this%destroy()
+End Subroutine
 
 !! ------------------------------------------------------------------ !!
 !! End Procedures

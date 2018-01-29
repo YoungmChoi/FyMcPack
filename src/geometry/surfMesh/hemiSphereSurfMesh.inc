@@ -2,6 +2,33 @@
 !! Procedures : Type hemiSphereSurfMesh
 !! ------------------------------------------------------------------ !!
 
+    Subroutine initializeHemiSphereMeshDict(this, dict)
+        Implicit None
+        !! - Input & Output Variables ------------------------------------------
+        class(typHemiSphereSurfMesh), intent(inout) :: this
+        Type(typDictionaryPtr)                      :: dict
+        Real(RP)    :: radius
+        Integer     :: nR, nZ
+        Real(RP)    :: x0, y0, z0
+        Integer     :: nLineSub
+        Logical     :: writeLog
+
+        radius = dict%getReal("radius")
+
+        nR = dict%getInt("nR")
+        nZ = dict%getInt("nZ")
+
+        x0 = dict%getRealOrDefault("center", 0.0_RP, 1)
+        y0 = dict%getRealOrDefault("center", 0.0_RP, 2)
+        z0 = dict%getRealOrDefault("center", 0.0_RP, 3)
+
+        nLineSub = dict%getIntOrDefault("nSubLine", 1)
+        writeLog = dict%getLogicalOrDefault("writeLog",.TRUE.)
+
+        Call this%initialize(radius, nR, nZ, x0, y0, z0, nLineSub, writeLog)
+
+    End Subroutine
+
     Subroutine initializeHemiSphereMesh(this, radius, nR, nZ, &
                                         x0, y0, z0, nLineSub, &
                                         writeLog)

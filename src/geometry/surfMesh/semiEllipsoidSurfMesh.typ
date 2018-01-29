@@ -38,7 +38,14 @@
     contains
 
         !! Initialize Semi-Ellipsoid Surface Mesh
-        procedure, pass, public :: initialize => initializeSemiEllipsoidSurfMesh
+        procedure, pass, private :: initializeSemiEllipsoidSurfMesh
+
+        !! Initialize Semi-Ellipsoid Surface Mesh with dictionary
+        procedure, pass, private :: initializeSemiEllipsoidSurfMeshDict
+
+        !! - Initializer
+        generic :: initialize => initializeSemiEllipsoidSurfMesh,   &
+                                 initializeSemiEllipsoidSurfMeshDict
 
     End Type
 

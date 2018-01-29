@@ -8,26 +8,27 @@
     class(typEllipsoidSurfMesh), intent(inout) :: this
     Type(typDictionaryPtr) :: dict
 
-    Integer,dimension(3)   :: numberOfMesh
-    Real(RP),dimension(3)  :: halfAxis, center
-
     integer   :: nX, nY, nZ
     Real(RP)  :: rX, rY, rZ
     Real(RP)  :: x0, y0, z0
 
     Logical   :: writeLog
 
-    numberOfMesh = dict%getIntArray("numberOfMesh")
-    halfAxis     = dict%getRealArray("halfAxis")
-    center       = dict%getRealArrayOrDefault("center", (/0.0_RP, 0.0_RP, 0.0_RP /) )
-    writeLog     = dict%getLogicalOrDefault("writeLog",.TRUE.)
+        rX = dict%getReal("halfAxis", 1)
+        rY = dict%getReal("halfAxis", 2)
+        rZ = dict%getReal("halfAxis", 3)
 
-    nX = numberOfMesh(1);   nY = numberOfMesh(2);   nZ = numberOfMesh(3)
-    rX = halfAxis(1);       rY = halfAxis(2);       rZ = halfAxis(3)
-    x0 = center(1);         y0 = center(2);         z0 = center(3)
+        nX = dict%getInt("numberOfMesh", 1)
+        nY = dict%getInt("numberOfMesh", 2)
+        nZ = dict%getInt("numberOfMesh", 3)
 
+        x0 = dict%getRealOrDefault("center", 0.0_RP, 1)
+        y0 = dict%getRealOrDefault("center", 0.0_RP, 2)
+        z0 = dict%getRealOrDefault("center", 0.0_RP, 3)
 
-    Call this%initialize(rX, rY, rZ, nX, nY, nZ, x0, y0, z0, writeLog)
+        writeLog = dict%getLogicalOrDefault("writeLog",.TRUE.)
+
+        Call this%initialize(rX, rY, rZ, nX, nY, nZ, x0, y0, z0, writeLog)
 
     End Subroutine
 

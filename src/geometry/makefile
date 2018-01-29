@@ -13,4 +13,4 @@ createObj: $(DIR_OBJ)mfpGeometry.o
 
 $(DIR_OBJ)mfpGeometry.o: $(DIR_SUB_SRC)mfpGeometry.f90
 	@echo $(COTEXT)
-	$(COMPILE_OBJECT_RULE) $<
+	$(COMPILE_OBJECT_RULE) $< -o $@

@@ -1,6 +1,43 @@
 !! ------------------------------------------------------------------ !!
 !! Procedures : Type paraPipeSurfMesh
 !! ------------------------------------------------------------------ !!
+    Subroutine initializeParaPipeMeshDict(this, dict)
+        Implicit None
+        class(typParaPipeMesh), intent(inout) :: this
+        Type(typDictionaryPtr)                :: dict
+        Real(RP)    :: Lx, Ly, Lz
+        Integer     :: Nx, Ny, Nz
+        Real(RP)    :: x0, y0, z0
+        Real(RP)    :: rX, rY, rZ
+        Logical     :: isOpenTop
+        Integer     :: nLineSub
+        Logical     :: writeLog
+
+        Lx = dict%getReal("length", 1)
+        Ly = dict%getReal("length", 2)
+        Lz = dict%getReal("length", 3)
+
+        nX = dict%getInt("numberOfMesh", 1)
+        nY = dict%getInt("numberOfMesh", 2)
+        nZ = dict%getInt("numberOfMesh", 3)
+
+        rX = dict%getRealOrDefault("meshRatio", 1.0_RP, 1)
+        rY = dict%getRealOrDefault("meshRatio", 1.0_RP, 2)
+        rZ = dict%getRealOrDefault("meshRatio", 1.0_RP, 3)
+
+        x0 = dict%getRealOrDefault("center", 0.0_RP, 1)
+        y0 = dict%getRealOrDefault("center", 0.0_RP, 2)
+        z0 = dict%getRealOrDefault("center", 0.0_RP, 3)
+
+        isOpenTop = dict%getLogicalOrDefault("isTopOpen",.FALSE.)
+        nLineSub  = dict%getIntOrDefault("nSubLine", 1)
+        writeLog  = dict%getLogicalOrDefault("writeLog",.TRUE.)
+
+        Call this%initialize(Lx, Ly, Lz, Nx, Ny, Nz, x0, y0, z0, &
+                             rX, rY, rZ, isOpenTop, nLineSub, writeLog)
+
+
+    End Subroutine
 
     Subroutine initializeParaPipeMesh(this, Lx, Ly, Lz, &
                                             Nx, Ny, Nz, &

@@ -2,6 +2,35 @@
 !! Procedures : Type typSemiEllipsoidSurfMesh
 !! ------------------------------------------------------------------ !!
 
+    Subroutine initializeSemiEllipsoidSurfMeshDict(this, dict)
+        Implicit None
+        class(typSemiEllipsoidSurfMesh), intent(inout) :: this
+        Type(typDictionaryPtr)                :: dict
+        Real(RP)    :: rX, rY, rZ
+        Integer     :: nX, nY, nZ
+        Real(RP)    :: x0, y0, z0
+        Integer     :: nLineSub
+        Logical     :: writeLog
+
+        rX = dict%getReal("halfAxis", 1)
+        rY = dict%getReal("halfAxis", 2)
+        rZ = dict%getReal("halfAxis", 3)
+
+        nX = dict%getInt("numberOfMesh", 1)
+        nY = dict%getInt("numberOfMesh", 2)
+        nZ = dict%getInt("numberOfMesh", 3)
+
+        x0 = dict%getRealOrDefault("center", 0.0_RP, 1)
+        y0 = dict%getRealOrDefault("center", 0.0_RP, 2)
+        z0 = dict%getRealOrDefault("center", 0.0_RP, 3)
+
+        nLineSub = dict%getIntOrDefault("nSubLine", 1)
+        writeLog = dict%getLogicalOrDefault("writeLog",.TRUE.)
+
+        Call this%initialize(rX, rY, rZ, nX, nY, nZ, x0, y0, z0, nLineSub, writeLog)
+
+    End Subroutine
+
     Subroutine initializeSemiEllipsoidSurfMesh(this, rX, rY, rZ, &
                                                      nX, nY, nZ, &
                                                      x0, y0, z0, &

@@ -44,7 +44,14 @@
     contains
 
         !! - Initialze
-        procedure, pass, public :: initialize => initializeParaPipeMesh
+        procedure, pass, private :: initializeParaPipeMesh
+
+        !! - initialize with dictionary
+        procedure, pass, private :: initializeParaPipeMeshDict
+
+        !! - Initialze
+        generic :: initialize => initializeParaPipeMesh, &
+                                 initializeParaPipeMeshDict
 
     end type
 

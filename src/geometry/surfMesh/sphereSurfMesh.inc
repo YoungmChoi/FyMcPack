@@ -1,6 +1,31 @@
 !! ------------------------------------------------------------------ !!
 !! Procedures : Type sphereSurfMesh
 !! ------------------------------------------------------------------ !!
+    Subroutine initializeSphereMeshDict(this, dict)
+        Implicit None
+        !! - Input & Output Variables ------------------------------------------
+        class(typSphereSurfMesh), intent(inout) :: this
+        Type(typDictionaryPtr)                  :: dict
+        !! - Local Variables ---------------------------------------------------
+        Real(RP)    :: radius
+        Integer     :: nR, nZ
+        Real(RP)    :: x0, y0, z0
+        Logical     :: writeLog
+
+        radius = dict%getReal("radius")
+
+        nR = dict%getInt("nR")
+        nZ = dict%getInt("nZ")
+
+        x0 = dict%getRealOrDefault("center", 0.0_RP, 1)
+        y0 = dict%getRealOrDefault("center", 0.0_RP, 2)
+        z0 = dict%getRealOrDefault("center", 0.0_RP, 3)
+
+        writeLog = dict%getLogicalOrDefault("writeLog",.TRUE.)
+
+        Call this%initialize(radius, nR, nZ, x0, y0, z0, writeLog)
+
+    End Subroutine
 
     Subroutine initializeSphereMesh(this, radius, nR, nZ, x0, y0, z0, writeLog)
         Implicit None
