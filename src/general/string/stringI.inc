@@ -442,7 +442,7 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
     character(len=CHAR_LEN), allocatable :: args(:)
     character(len=CHAR_LEN)              :: dummyChar
     type(typString)                      :: dummyStr
-    real :: dummyReal
+    real(RP) :: dummyReal
 
     integer :: ii
 

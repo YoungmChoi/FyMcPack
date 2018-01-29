@@ -84,7 +84,7 @@
             magV = dsqrt(vec1(1)*vec1(1) + vec1(2)*vec1(2) + vec1(3)*vec1(3))
 
             !! Area
-            this%area_ = magV
+            this%area = magV
 
             magV = dsqrt(vec3(1)*vec3(1) + vec3(2)*vec3(2) + vec3(3)*vec3(3))
             vec3 = vec3 / magV
@@ -111,7 +111,7 @@
 
             !! Area
             magV = dsqrt(vec3(1)*vec3(1) + vec3(2)*vec3(2) + vec3(3)*vec3(3))
-            this%area_ = 0.5_RP * magV
+            this%area = 0.5_RP * magV
 
             !! Normal
             vec3 = vec3 / magV
@@ -150,7 +150,7 @@
         !! Area weighed normal
         sumNvec = sumNvec / sumArea
         !! Area
-        this%area_   = sumArea
+        this%area   = sumArea
 
         Call this%normal%set(-1, sumNvec(1) , sumNvec(2), sumNvec(3))
 
@@ -177,12 +177,6 @@
         end if
     End Function
 
-    Real(RP) Function panelArea(this)
-        Implicit None
-        class(typPanel), intent(in) :: this
-        panelArea = this%area_
-    End Function
-
     Integer Function panelVTKCellType(this)
         Implicit None
         class(typPanel), intent(in) :: this
@@ -202,7 +196,7 @@
         end if
 
         to%vtkCellType_ = from%vtkCellType_
-        to%area_        = from%area_
+        to%area         = from%area
         to%center       = from%center
         to%normal       = from%normal
 
@@ -214,7 +208,7 @@
         if (allocated(this%nodeLabel_)) deallocate(this%nodeLabel_)
         this%nNode_       = 0
         this%vtkCellType_ = -1
-        this%area_        = 0
+        this%area         = 0.0_RP
     End Subroutine
 
     Subroutine finalPanel(this)

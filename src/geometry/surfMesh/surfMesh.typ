@@ -96,6 +96,9 @@
     !!- Semi-Ellipsoid Mesh
     Include "surfMesh/semiEllipsoidSurfMesh.typ"
 
+    !!- Circular Cylinder Shell Mesh
+    Include "surfMesh/circularCylinderShell.typ"
+
 !! ------------------------------------------------------------------ !!
 !!                      Type SurfMesh
 !! ------------------------------------------------------------------ !!

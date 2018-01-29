@@ -2,7 +2,7 @@
 
 surfaceMesh
 {
-    type                sphere;
+    type                circularCylinderShell;
 
     writeVTK            true;
     writeLog            true;
@@ -66,6 +66,23 @@ surfaceMesh
         center          ( 0.0  2.0  3.0);
 
         writeLog        $writeLog;
+    }
+
+    circularCylinderShell
+    {
+        radius          1.0;
+        height          2.0;
+
+        nR              21;
+        nZ              12;
+
+        rZ              0.8;
+
+        center          ( 0.0  0.0  -1.0);
+
+        nSubLine        2;
+        writeLog        $writeLog;
+
     }
 
 }

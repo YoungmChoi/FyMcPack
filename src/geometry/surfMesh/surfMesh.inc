@@ -12,6 +12,7 @@ Subroutine initializeSurfMesh(surfMesh, dict)
     Type(typHemiSphereSurfMesh)     :: hSphereMesh
     Type(typEllipsoidSurfMesh)      :: ellipsoidMesh
     Type(typSemiEllipsoidSurfMesh)  :: semiEllipsoidMesh
+    Type(typCircularCylinderShellSurfMesh)  :: circularCylinderShell
 
     Character(len=CHAR_LEN) :: surfaceType
     Logical :: isWriteVTK
@@ -65,6 +66,15 @@ Subroutine initializeSurfMesh(surfMesh, dict)
         !! Surface Mesh Pointer (Up-casting)
         allocate(surfMesh, source = semiEllipsoidMesh)
 
+    !!... Semi - Ellipsoid Mesh
+    else if (isStringEqual(surfaceType,"circularCylinderShell")) then
+
+        !! Initialize with dictionary
+        Call circularCylinderShell%initialize(dict%subDict("circularCylinderShell"))
+
+        !! Surface Mesh Pointer (Up-casting)
+        allocate(surfMesh, source = circularCylinderShell)
+
     else
         write(*,*) " "
         write(*,*) "    [ERROR] initializeSurfMesh(this, dict)."
@@ -108,50 +118,60 @@ Subroutine writeVTKSurfMesh(this, filePath)
     integer :: i,j
     Integer :: nConnect
 
-    ioUnit = FIO_UNIT + 1
+    if ((this%nNode.ge.1).and.(this%nPanel.ge.1)) then
+        ioUnit = FIO_UNIT + 1
 
-    Open(unit   = ioUnit,   &
-         file   = trim(filePath), &
-         status = "replace")
+        Open(unit   = ioUnit,   &
+             file   = trim(filePath), &
+             status = "replace")
 
-    write(ioUnit,1001) "# vtk DataFile Version 3.0"
-    write(ioUnit,1001) "vtk output"
-    write(ioUnit,1001) "ASCII"
-    write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+        write(ioUnit,1001) "# vtk DataFile Version 3.0"
+        write(ioUnit,1001) "vtk output"
+        write(ioUnit,1001) "ASCII"
+        write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
 
-    write(ioUnit,1002) "POINTS ", this%nNode, " float"
-    do i = 1, this%nNode
-    write(ioUnit,1003) this%node(i)%x(), this%node(i)%y(), this%node(i)%z()
-    enddo
+        write(ioUnit,1002) "POINTS ", this%nNode, " float"
+        do i = 1, this%nNode
+        write(ioUnit,1003) this%node(i)%x(), this%node(i)%y(), this%node(i)%z()
+        enddo
 
-    nConnect = 0
-    do i =1, this%nPanel
-        nConnect = nConnect + this%panel(i)%nNode() + 1
-    enddo
+        nConnect = 0
+        do i =1, this%nPanel
+            nConnect = nConnect + this%panel(i)%nNode() + 1
+        enddo
 
-    write(ioUnit,1004) "CELLS ", this%nPanel, nConnect
-    do i = 1, this%nPanel
-    write(ioUnit,1005) this%panel(i)%nNode(), &
-                      (this%panel(i)%nodeLabel(j) - 1, j = 1,this%panel(i)%nNode())
-    enddo
+        write(ioUnit,1004) "CELLS ", this%nPanel, nConnect
+        do i = 1, this%nPanel
+        write(ioUnit,1005) this%panel(i)%nNode(), &
+                          (this%panel(i)%nodeLabel(j) - 1, j = 1,this%panel(i)%nNode())
+        enddo
 
-    write(ioUnit,1002) "CELL_TYPES ", this%nPanel
-    do i = 1, this%nPanel
-    write(ioUnit,1006) this%panel(i)%vtkCellType()
-    enddo
+        write(ioUnit,1002) "CELL_TYPES ", this%nPanel
+        do i = 1, this%nPanel
+        write(ioUnit,1006) this%panel(i)%vtkCellType()
+        enddo
 
-    write(ioUnit,1002) "CELL_DATA ", this%nPanel
-    write(ioUnit,1001) "SCALARS Panel_Area float"
-    write(ioUnit,1001) "LOOKUP_TABLE default"
-    do i = 1, this%nPanel
-    write(ioUnit,1003) this%panel(i)%area()
-    enddo
-    write(ioUnit,1001) "NORMALS Panel_Normal float"
-    do i = 1, this%nPanel
-    write(ioUnit,1003) this%panel(i)%normal%x(), this%panel(i)%normal%y(), this%panel(i)%normal%z()
-    enddo
+        write(ioUnit,1002) "CELL_DATA ", this%nPanel
+        write(ioUnit,1001) "SCALARS Panel_Area float"
+        write(ioUnit,1001) "LOOKUP_TABLE default"
+        do i = 1, this%nPanel
+        write(ioUnit,1003) this%panel(i)%area
+        enddo
+        write(ioUnit,1001) "NORMALS Panel_Normal float"
+        do i = 1, this%nPanel
+        write(ioUnit,1003) this%panel(i)%normal%x(), this%panel(i)%normal%y(), this%panel(i)%normal%z()
+        enddo
 
-    Close(ioUnit)
+        Close(ioUnit)
+    else
+        write(*,*) " "
+        write(*,*) "    [WARNING] writeVTKSurfMesh(typSurfMesh, path)"
+        write(*,*) "        Number of Node and Panel should be larger than 1."
+        write(*,*) " "
+        write(*,*) "        - Number of Node  : ", this%nNode
+        write(*,*) "        - Number of Panel : ", this%nPanel
+        write(*,*) " "
+    end if
 
     1001 format(a)
     1002 format(a,i15,a)
@@ -170,45 +190,55 @@ Subroutine writeVTKLineMesh(this, filePath)
     integer :: i,j
     Integer :: nConnect
 
-    ioUnit = FIO_UNIT + 1
+    if ((this%nLineNode.ge.1).and.(this%nLine.ge.1)) then
+        ioUnit = FIO_UNIT + 1
 
-    Open(unit   = ioUnit,   &
-         file   = trim(filePath), &
-         status = "replace")
+        Open(unit   = ioUnit,   &
+             file   = trim(filePath), &
+             status = "replace")
 
-    write(ioUnit,1001) "# vtk DataFile Version 3.0"
-    write(ioUnit,1001) "vtk output"
-    write(ioUnit,1001) "ASCII"
-    write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+        write(ioUnit,1001) "# vtk DataFile Version 3.0"
+        write(ioUnit,1001) "vtk output"
+        write(ioUnit,1001) "ASCII"
+        write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
 
-    write(ioUnit,1002) "POINTS ", this%nLineNode, " float"
-    do i = 1, this%nLineNode
-    write(ioUnit,1003) this%lineNode(i)%x(), this%lineNode(i)%y(), this%lineNode(i)%z()
-    enddo
+        write(ioUnit,1002) "POINTS ", this%nLineNode, " float"
+        do i = 1, this%nLineNode
+        write(ioUnit,1003) this%lineNode(i)%x(), this%lineNode(i)%y(), this%lineNode(i)%z()
+        enddo
 
-    write(ioUnit,1004) "CELLS ", this%nLine, this%nLine * 3
-    do i = 1, this%nLine
-    write(ioUnit,1005) this%linePanel(i)%nNode(),           &
-                       (this%linePanel(i)%nodeLabel(j)-1, j = 1, this%linePanel(i)%nNode())
-    enddo
+        write(ioUnit,1004) "CELLS ", this%nLine, this%nLine * 3
+        do i = 1, this%nLine
+        write(ioUnit,1005) this%linePanel(i)%nNode(),           &
+                           (this%linePanel(i)%nodeLabel(j)-1, j = 1, this%linePanel(i)%nNode())
+        enddo
 
-    write(ioUnit,1002) "CELL_TYPES ", this%nLine
-    do i = 1, this%nLine
-    write(ioUnit,1006) this%linePanel(i)%vtkCellType()
-    enddo
+        write(ioUnit,1002) "CELL_TYPES ", this%nLine
+        do i = 1, this%nLine
+        write(ioUnit,1006) this%linePanel(i)%vtkCellType()
+        enddo
 
-    write(ioUnit,1002) "CELL_DATA ", this%nLine
-    write(ioUnit,1001) "SCALARS Panel_Area float"
-    write(ioUnit,1001) "LOOKUP_TABLE default"
-    do i = 1, this%nLine
-    write(ioUnit,1003) this%linePanel(i)%area()
-    enddo
-    write(ioUnit,1001) "NORMALS Panel_Normal float"
-    do i = 1, this%nLine
-    write(ioUnit,1003) this%linePanel(i)%normal%x(), this%linePanel(i)%normal%y(), this%linePanel(i)%normal%z()
-    enddo
+        write(ioUnit,1002) "CELL_DATA ", this%nLine
+        write(ioUnit,1001) "SCALARS Panel_Area float"
+        write(ioUnit,1001) "LOOKUP_TABLE default"
+        do i = 1, this%nLine
+        write(ioUnit,1003) this%linePanel(i)%area
+        enddo
+        write(ioUnit,1001) "NORMALS Panel_Normal float"
+        do i = 1, this%nLine
+        write(ioUnit,1003) this%linePanel(i)%normal%x(), this%linePanel(i)%normal%y(), this%linePanel(i)%normal%z()
+        enddo
 
-    Close(ioUnit)
+        Close(ioUnit)
+    else
+        write(*,*) " "
+        write(*,*) "    [WARNING] writeVTKLineMesh(typSurfMesh, path)"
+        write(*,*) "        Number of Line Node and Line should be larger than 1."
+        write(*,*) " "
+        write(*,*) "        - Number of Line Node  : ", this%nLineNode
+        write(*,*) "        - Number of Line Panel : ", this%nLine
+        write(*,*) " "
+    end if
 
     1001 format(a)
     1002 format(a,i15,a)
@@ -311,6 +341,8 @@ End Subroutine
     !!- Semi-Ellipsoid Mesh
     Include "surfMesh/semiEllipsoidSurfMesh.inc"
 
+    !!- Circular Cylinder Shell Mesh
+    Include "surfMesh/circularCylinderShell.inc"
 
 !! ------------------------------------------------------------------ !!
 !! Derived Class Procedure

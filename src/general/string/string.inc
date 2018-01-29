@@ -116,7 +116,7 @@ function getStringReal(this) result(value)
     Implicit None
     Class(typString), intent(in) :: this
     real(rp) :: value
-    real     :: dummyReal
+    real(rp) :: dummyReal
     integer  :: io
     character(len=CHAR_LEN) :: dummyStr
     dummyStr = trim(this%str_)

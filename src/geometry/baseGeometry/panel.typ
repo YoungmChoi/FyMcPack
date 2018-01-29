@@ -34,13 +34,22 @@
         integer  :: vtkCellType_
 
         !! Area of Panel (Sum of sub-triangle area)
-        real(RP) :: area_
+        real(RP), public :: area
 
         !! Center of Panel (Area averaged normal)
         type(typPoint), public :: center
 
         !! Normal Vector
         type(typPoint), public :: normal
+
+        !! Number of Gauss Point
+        integer, public        :: nGauss
+
+        !! Gauss Point
+        type(typPoint), public, allocatable :: gPoint(:)
+
+        !! Gauss Point
+        real(RP), public, allocatable       :: gWeight(:)
 
 !! Type Procedures -------------------------------------------------- !!
 
@@ -57,9 +66,6 @@
 
         !! Return Node label
         procedure, pass, public :: nodeLabel => panelNodeLabel
-
-        !! Returin Panel Area
-        procedure, pass, public :: area => panelArea
 
         !! Return VTK Surface Mesh Type
         procedure, pass, public :: vtkCellType => panelVTKCellType

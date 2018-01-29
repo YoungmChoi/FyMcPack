@@ -7,11 +7,11 @@ Subroutine testSurfMesh
 
     ! Call testParaPipe()
 
-    Call testSemiEllipsoid()
+    ! Call testSemiEllipsoid()
+    !
+    ! Call testSphere()
 
-    Call testSphere()
-
-    ! Call testSurfMeshDict()
+    Call testSurfMeshDict()
 
 End Subroutine
 

@@ -47,7 +47,7 @@
                                             nLineSub, &
                                             writeLog)
         implicit none
-        Real(RP),Dimension(3) :: refVector = [0.0_RP, 0.0_RP, 1.0_RP]
+        Real(RP),Dimension(3), parameter :: refVector = [0.0_RP, 0.0_RP, 1.0_RP]
         !! - Input & Output Variables
         class(typParaPipeMesh), intent(inout) :: this
         Real(RP),intent(in) :: Lx, Ly, Lz
