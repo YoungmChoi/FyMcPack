@@ -1,18 +1,26 @@
     Program main
 
         Use mfpGlobal
-        use mfpGeneral
+        ! use mfpGeneral
+        use mfpGeometry
 
     Implicit None
 
-        ! Call testString()
+        !!... Test General
 
-        Call testDictionary
+            ! Call testString()
 
-        ! Call testSLTable()
+            Call testDictionary
 
-        ! Call testLLink()
+            ! Call testSLTable()
 
-        ! Call testDataArray()
+            ! Call testLLink()
+
+            ! Call testDataArray()
+
+
+        !!... Test Geometry
+
+            ! Call testSurfMesh()
 
     End Program

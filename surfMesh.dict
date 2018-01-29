@@ -1,0 +1,14 @@
+
+
+
+ellipsoid
+{   
+    halfAxis        ( 5.0_RP  2.0_RP  1.0_RP);
+    numberOfMesh    ( 15       10       5);    
+    center          ( 0.0_RP  0.0_RP   -0.5_RP);
+
+    writeLog        false;
+
+    writeVTK        false;   
+
+}

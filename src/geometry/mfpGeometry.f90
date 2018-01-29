@@ -22,6 +22,7 @@ Module  mfpGeometry
 !!  Dependency ------------------------------------------------------ !!
 
     use mfpGlobal
+    use mfpGeneral
 
 !!  Variable Declaration -------------------------------------------- !!
 
@@ -31,13 +32,6 @@ private
 
 !!  Module Variable ------------------------------------------------- !!
 
-    integer, parameter :: strMaxLength = CHAR_LEN
-
-    integer, parameter :: sLTableDefaultSize = 50
-
-    logical, parameter :: sLTableSearchErrrorStop = .TRUE.
-
-    integer, parameter :: fileLineLength = 2000
 
 !!  Header Files ---------------------------------------------------- !!
 
@@ -46,6 +40,10 @@ private
     Include "baseGeometry/panel.typ"
 
     Include "surfMesh/surfMesh.typ"
+
+    !! Public
+
+    Public :: testSurfMesh
 
 Contains
 
@@ -59,12 +57,6 @@ Contains
 
 !!  Subroutine Test Script ------------------------------------------ !!
 
-    ! Include "string/testString.inc"
-    !
-    ! Include "dataArray/testDataArray.inc"
-    !
-    ! Include "sLookUpTable/testSLTable.inc"
-    !
-    ! Include "dictionary/testDictionary.inc"
+    Include "surfMesh/testSurfMesh.inc"
 
 End Module

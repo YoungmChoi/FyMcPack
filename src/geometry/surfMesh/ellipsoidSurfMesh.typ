@@ -38,7 +38,14 @@
     contains
 
         !! Initialize Sphere Mesh
-        procedure, pass, public :: initialize => initializeEllipsoidSurfMesh
+        procedure, pass, private :: initializeEllipsoidSurfMesh
+
+        !! Initialize with dictionary
+        procedure, pass, private :: initializeEllipsoidSurfMeshDict
+
+        !! Initialize with dictionary
+        generic :: initialize =>  initializeEllipsoidSurfMesh, &
+                                  initializeEllipsoidSurfMeshDict
 
     End Type
 
