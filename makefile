@@ -45,11 +45,13 @@ Release: cleanall
 Release: $(MKDIRS)
 Release: compileObject
 Release: main
+Release: cleanCompileObj
 
 lib: cleanall
 lib: $(MKDIRS)
 lib: compileObject
 lib: makelib
+lib: cleanCompileObj
 
 ### auxiliary variables --------------------------------------------------------
 COTEXT  = " - Compile  : '$(<F)'"
@@ -76,6 +78,7 @@ $(DIR_OBJ)main.o: $(DIR_SRC)main.f90 \
 compileObj: \
 	$(DIR_OBJ)mfpGlobal.o
 	$(MAKE) createObj -f $(DIR_SRC)general/makefile
+	$(MAKE) createObj -f $(DIR_SRC)geometry/makefile
 
 $(DIR_OBJ)mfpGlobal.o: $(DIR_SRC)mfpGlobal.f90
 	@echo $(COTEXT)
@@ -83,11 +86,15 @@ $(DIR_OBJ)mfpGlobal.o: $(DIR_SRC)mfpGlobal.f90
 
 ### phony auxiliary rules ------------------------------------------------------
 
+.PHONY : cleanCompileObj
+cleanCompileObj:
+	@rm  compileObj
+
 .PHONY : $(MKDIRS)
 $(MKDIRS):
 	@mkdir -p $@
+	
 .PHONY : cleanobj
-
 cleanobj:
 	@echo deleting objects
 	@rm -fr $(DIR_OBJ) @rm *.o
