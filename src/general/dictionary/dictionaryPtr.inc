@@ -48,6 +48,8 @@ Subroutine initDict_File(this, fileDir, fileName, ext)
 
     this%ptrDict => dictDB(dictID)
 
+    Call dictFileIO%destroy()
+
 End Subroutine
 
 Subroutine printDictionary(this)

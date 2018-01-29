@@ -18,4 +18,6 @@ Contains
 
     procedure, pass, public :: initialize => initialize_FileIO
 
+    procedure, pass, public :: destroy => destroyFileIO
+
 end type
