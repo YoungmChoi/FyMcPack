@@ -8,12 +8,15 @@ surfaceMesh
     writeLog            true;
     nSubLine            5;
 
+    nGauss              3;
+
     ellipsoid
     {
         halfAxis        ( 5.0  2.0  2.0);
         numberOfMesh    ( 15       10   5 );
         center          ( 0.0  0.0   -0.5);
 
+        nGauss          $nGauss;
         writeLog        $writeLog;
     }
 
@@ -26,6 +29,7 @@ surfaceMesh
 
         center          ( 0.0  0.0   -0.5);
 
+        nGauss          $nGauss;
         nSubLine        $nSubLine;
 
         writeLog        $writeLog;
@@ -41,6 +45,7 @@ surfaceMesh
 
         isTopOpen       true;
 
+        nGauss          $nGauss;
         nSubLine        $nSubLine;
 
         writeLog        $writeLog;
@@ -52,6 +57,7 @@ surfaceMesh
         numberOfMesh    ( 15       10   5 );
         center          ( 0.0   0.0   0.0);
 
+        nGauss          $nGauss;
         nSubLine        $nSubLine;
         writeLog        $writeLog;
     }
@@ -65,6 +71,7 @@ surfaceMesh
 
         center          ( 0.0  2.0  3.0);
 
+        nGauss          $nGauss;
         writeLog        $writeLog;
     }
 
@@ -80,6 +87,7 @@ surfaceMesh
 
         center          ( 0.0  0.0  -1.0);
 
+        nGauss          $nGauss;
         nSubLine        2;
         writeLog        $writeLog;
 

@@ -10,6 +10,7 @@
         Real(RP)    :: radius
         Integer     :: nR, nZ
         Real(RP)    :: x0, y0, z0
+        Integer     :: nGaussPoint
         Logical     :: writeLog
 
         radius = dict%getReal("radius")
@@ -21,19 +22,21 @@
         y0 = dict%getRealOrDefault("center", 0.0_RP, 2)
         z0 = dict%getRealOrDefault("center", 0.0_RP, 3)
 
+        nGaussPoint = dict%getIntOrDefault("nGauss", 1)
         writeLog = dict%getLogicalOrDefault("writeLog",.TRUE.)
 
-        Call this%initialize(radius, nR, nZ, x0, y0, z0, writeLog)
+        Call this%initialize(radius, nR, nZ, x0, y0, z0, nGaussPoint, writeLog)
 
     End Subroutine
 
-    Subroutine initializeSphereMesh(this, radius, nR, nZ, x0, y0, z0, writeLog)
+    Subroutine initializeSphereMesh(this, radius, nR, nZ, x0, y0, z0, nGaussPoint, writeLog)
         Implicit None
         !! - Input & Output Variables ------------------------------------------
         class(typSphereSurfMesh), intent(inout) :: this
         Real(RP), intent(in) :: radius
         Integer,  intent(in) :: nR, nZ
         Real(RP),optional    :: x0, y0, z0
+        Integer, optional    :: nGaussPoint
         Logical, optional    :: writeLog
         !! - Local Variables ---------------------------------------------------
         Real(RP) :: Lx, Ly, Lz
@@ -128,6 +131,13 @@
         !! - Reset Surface Mesh
         do iPanel = 1, this%nPanel
             Call this%panel(iPanel)%correct(this%node)
+
+            if (present(nGaussPoint)) then
+                Call this%panel(iPanel)%correctGaussPoint(nGaussPoint)
+            else
+                Call this%panel(iPanel)%correctGaussPoint(1)
+            end if
+
         Enddo
 
         !! Write Input Parameters ----------------------------------------------

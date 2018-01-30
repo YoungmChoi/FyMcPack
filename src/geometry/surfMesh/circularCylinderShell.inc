@@ -13,6 +13,7 @@ Subroutine initializeCirularCylinderShellMeshDict(this, dict)
     Real(RP)    :: x0, y0, z0
     Integer     :: nLineSub
     Logical     :: writeLog
+    Integer     :: nGaussPoint
     Real(RP)    :: rZ
 
     radius = dict%getReal("radius")
@@ -27,17 +28,19 @@ Subroutine initializeCirularCylinderShellMeshDict(this, dict)
 
     rz = dict%getRealOrDefault("rZ", 1.0_RP)
 
-    nLineSub  = dict%getIntOrDefault("nSubLine", 1)
-    writeLog  = dict%getLogicalOrDefault("writeLog",.TRUE.)
+    nLineSub    = dict%getIntOrDefault("nSubLine", 1)
+    nGaussPoint = dict%getIntOrDefault("nGauss", 1)
+    writeLog    = dict%getLogicalOrDefault("writeLog",.TRUE.)
 
-    Call this%initialize(radius, height, nR, nZ, x0, y0, z0, rZ, nLineSub, writeLog)
+    Call this%initialize(radius, height, nR, nZ, x0, y0, z0, rZ, nLineSub, nGaussPoint, writeLog)
 
 End Subroutine
 
 Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
-                                                    nR, nZ, &
+                                                    nR, nZ,         &
                                                     x0, y0, z0, rZ, &
-                                                    nLineSub, &
+                                                    nLineSub,       &
+                                                    nGaussPoint,    &
                                                     writeLog)
     Implicit None
     Class(typCircularCylinderShellSurfMesh), intent(inout)  :: this
@@ -46,6 +49,7 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
     Real(RP), optional          :: x0, y0, z0
     Real(RP), optional          :: rZ
     Integer, optional           :: nLineSub
+    Integer, optional           :: nGaussPoint
     Logical, optional           :: writeLog
 
     integer                     :: ir, iz
@@ -231,6 +235,26 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
 
         Call this%lineNode(nNode)%move(xx, yy, zz)
     enddo
+
+    !! - Reset Surface Mesh
+    do nPanel = 1, this%nPanel
+        Call this%panel(nPanel)%correct(this%node)
+        if (present(nGaussPoint)) then
+            Call this%panel(nPanel)%correctGaussPoint(nGaussPoint)
+        else
+            Call this%panel(nPanel)%correctGaussPoint(1)
+        end if
+    Enddo
+
+    !! - Reset Surface Mesh
+    do nPanel = 1, this%nLine
+        Call this%linePanel(nPanel)%correct(this%lineNode, (/0.0_RP, 0.0_RP, 1.0_RP/))
+        if (present(nGaussPoint)) then
+            Call this%linePanel(nPanel)%correctGaussPoint(nGaussPoint)
+        else
+            Call this%linePanel(nPanel)%correctGaussPoint(1)
+        end if
+    Enddo
 
     !! Write Input Parameters ----------------------------------------------
     if (present(writeLog)) then

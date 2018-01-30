@@ -32,6 +32,7 @@ private
 
 !!  Module Variable ------------------------------------------------- !!
 
+    Include "../mathConstant/gaussQuadrature.inc"
 
 !!  Header Files ---------------------------------------------------- !!
 

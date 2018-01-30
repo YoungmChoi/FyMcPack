@@ -11,6 +11,7 @@
         Real(RP)    :: rX, rY, rZ
         Logical     :: isOpenTop
         Integer     :: nLineSub
+        Integer     :: nGaussPoint
         Logical     :: writeLog
 
         Lx = dict%getReal("length", 1)
@@ -31,10 +32,11 @@
 
         isOpenTop = dict%getLogicalOrDefault("isTopOpen",.FALSE.)
         nLineSub  = dict%getIntOrDefault("nSubLine", 1)
+        nGaussPoint = dict%getIntOrDefault("nGauss", 1)
         writeLog  = dict%getLogicalOrDefault("writeLog",.TRUE.)
 
         Call this%initialize(Lx, Ly, Lz, Nx, Ny, Nz, x0, y0, z0, &
-                             rX, rY, rZ, isOpenTop, nLineSub, writeLog)
+                             rX, rY, rZ, nGaussPoint, isOpenTop, nLineSub, writeLog)
 
 
     End Subroutine
@@ -43,8 +45,9 @@
                                             Nx, Ny, Nz, &
                                             x0, y0, z0, &
                                             rX, rY, rZ, &
-                                            isOpenTop, &
-                                            nLineSub, &
+                                            nGaussPoint,&
+                                            isOpenTop,  &
+                                            nLineSub,   &
                                             writeLog)
         implicit none
         Real(RP),Dimension(3), parameter :: refVector = [0.0_RP, 0.0_RP, 1.0_RP]
@@ -56,6 +59,7 @@
         Real(RP),optional   :: rX, rY, rZ
         Logical, optional   :: isOpenTop
         Integer, optional   :: nLineSub
+        Integer, optional   :: nGaussPoint
         Logical, optional   :: writeLog
         !! - Local Variables
         Real(RP)            :: xMin, xMax, yMin, yMax, zMin, zMax
@@ -857,12 +861,29 @@
                 lineLabel(2) = nLNodeP3 + iy
             endif
             Call this%linePanel(iPanel)%set(2, this%lineNode, lineLabel, refVector)
+
         enddo
 
         this%nLine = iPanel
         this%nLineNode = iNode
 
         end if
+
+        do iPanel = 1, this%nPanel
+            if (present(nGaussPoint)) then
+                Call this%panel(iPanel)%correctGaussPoint(nGaussPoint)
+            else
+                Call this%panel(iPanel)%correctGaussPoint(1)
+            end if
+        end do
+
+        do iPanel = 1, this%nLine
+            if (present(nGaussPoint)) then
+                Call this%linePanel(iPanel)%correctGaussPoint(nGaussPoint)
+            else
+                Call this%linePanel(iPanel)%correctGaussPoint(1)
+            end if
+        end do
 
         !! Write Input Parameters ----------------------------------------------
         if (present(writeLog)) then

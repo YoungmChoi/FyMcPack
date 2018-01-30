@@ -57,7 +57,11 @@
 
         procedure, pass, public :: writeVTKSurfMesh
 
+        procedure, pass, public :: writeVTKSurfGaussPoint
+
         procedure, pass, public :: writeVTKLineMesh
+
+        procedure, pass, public :: writeVTKLineMeshGaussPoint
 
         procedure, pass, public :: assignCopySurfMesh
 

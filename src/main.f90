@@ -6,6 +6,8 @@
 
     Implicit None
 
+        integer :: i
+
         !!... Test General
 
             ! Call testString()

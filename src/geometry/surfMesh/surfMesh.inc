@@ -98,14 +98,20 @@ Subroutine writeVTK(this, filePath)
     class(typSurfMesh), intent(inout) :: this
     Character(len=*),intent(in) :: filePath
     Character(len=CHAR_LEN) :: surfMeshPath, lineMeshPath
+    Character(len=CHAR_LEN) :: surfMeshGaussPath, lineMeshGaussPath
 
-    surfMeshPath = trim(filePath)//".vtk"
-    lineMeshPath = trim(filePath)//"_line.vtk"
+    surfMeshPath        = trim(filePath)//".vtk"
+    surfMeshGaussPath   = trim(filePath)//"_gauss.vtk"
+    lineMeshPath        = trim(filePath)//"_line.vtk"
+    lineMeshGaussPath   = trim(filePath)//"_line_gauss.vtk"
 
     Call writeVTKSurfMesh(this, surfMeshPath)
 
+    Call writeVTKSurfGaussPoint(this, surfMeshGaussPath)
+
     if (this%isOpenTop) then
-    Call writeVTKLineMesh(this, lineMeshPath)
+        Call writeVTKLineMesh(this, lineMeshPath)
+        Call writeVTKLineMeshGaussPoint(this, lineMeshGaussPath)
     end if
 
 End Subroutine
@@ -182,6 +188,64 @@ Subroutine writeVTKSurfMesh(this, filePath)
 
 End Subroutine
 
+Subroutine writeVTKSurfGaussPoint(this, filePath)
+    Implicit None
+    class(typSurfMesh), intent(inout) :: this
+    Character(len=*)           :: filePath
+    integer :: ioUnit
+    integer :: i,j
+    Integer :: nConnect
+
+    if ((this%nNode.ge.1).and.(this%nPanel.ge.1)) then
+        ioUnit = FIO_UNIT + 1
+
+        Open(unit   = ioUnit,   &
+             file   = trim(filePath), &
+             status = "replace")
+
+        write(ioUnit,1001) "# vtk DataFile Version 3.0"
+        write(ioUnit,1001) "vtk output"
+        write(ioUnit,1001) "ASCII"
+        write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+
+        write(ioUnit,1002) "POINTS ", this%nPanel * this%panel(1)%nGauss, " float"
+        do i = 1, this%nPanel
+            do j = 1, this%panel(1)%nGauss
+                write(ioUnit,1003) this%panel(i)%gPoint(j)%x(), this%panel(i)%gPoint(j)%y(), this%panel(i)%gPoint(j)%z()
+            enddo
+        enddo
+
+        ! write(ioUnit,1002) "CELL_DATA ", this%nPanel
+        ! write(ioUnit,1001) "SCALARS Panel_Area float"
+        ! write(ioUnit,1001) "LOOKUP_TABLE default"
+        ! do i = 1, this%nPanel
+        ! write(ioUnit,1003) this%panel(i)%area
+        ! enddo
+        ! write(ioUnit,1001) "NORMALS Panel_Normal float"
+        ! do i = 1, this%nPanel
+        ! write(ioUnit,1003) this%panel(i)%normal%x(), this%panel(i)%normal%y(), this%panel(i)%normal%z()
+        ! enddo
+
+        Close(ioUnit)
+    else
+        write(*,*) " "
+        write(*,*) "    [WARNING] writeVTKSurfGaussPoint(typSurfMesh, path)"
+        write(*,*) "        Number of Node and Panel should be larger than 1."
+        write(*,*) " "
+        write(*,*) "        - Number of Node  : ", this%nNode
+        write(*,*) "        - Number of Panel : ", this%nPanel
+        write(*,*) " "
+    end if
+
+    1001 format(a)
+    1002 format(a,i15,a)
+    1003 format(3(e15.7))
+    1004 format(a,2(i15))
+    1005 format(i5,99(i8))
+    1006 format(i5)
+
+End Subroutine
+
 Subroutine writeVTKLineMesh(this, filePath)
     Implicit None
     class(typSurfMesh), intent(inout) :: this
@@ -227,6 +291,53 @@ Subroutine writeVTKLineMesh(this, filePath)
         write(ioUnit,1001) "NORMALS Panel_Normal float"
         do i = 1, this%nLine
         write(ioUnit,1003) this%linePanel(i)%normal%x(), this%linePanel(i)%normal%y(), this%linePanel(i)%normal%z()
+        enddo
+
+        Close(ioUnit)
+    else
+        write(*,*) " "
+        write(*,*) "    [WARNING] writeVTKLineMesh(typSurfMesh, path)"
+        write(*,*) "        Number of Line Node and Line should be larger than 1."
+        write(*,*) " "
+        write(*,*) "        - Number of Line Node  : ", this%nLineNode
+        write(*,*) "        - Number of Line Panel : ", this%nLine
+        write(*,*) " "
+    end if
+
+    1001 format(a)
+    1002 format(a,i15,a)
+    1003 format(3(e15.7))
+    1004 format(a,2(i15))
+    1005 format(i5,4(i8))
+    1006 format(i5)
+
+End Subroutine
+
+Subroutine writeVTKLineMeshGaussPoint(this, filePath)
+    Implicit None
+    class(typSurfMesh), intent(inout) :: this
+    Character(len=*)           :: filePath
+    integer :: ioUnit
+    integer :: i,j
+    Integer :: nConnect
+
+    if ((this%nLineNode.ge.1).and.(this%nLine.ge.1)) then
+        ioUnit = FIO_UNIT + 1
+
+        Open(unit   = ioUnit,   &
+             file   = trim(filePath), &
+             status = "replace")
+
+        write(ioUnit,1001) "# vtk DataFile Version 3.0"
+        write(ioUnit,1001) "vtk output"
+        write(ioUnit,1001) "ASCII"
+        write(ioUnit,1001) "DATASET UNSTRUCTURED_GRID"
+
+        write(ioUnit,1002) "POINTS ", this%nLine * this%linePanel(1)%nGauss, " float"
+        do i = 1, this%nLine
+        do j = 1, this%linePanel(1)%nGauss
+        write(ioUnit,1003) this%linePanel(i)%gPoint(j)%vec()
+        enddo
         enddo
 
         Close(ioUnit)

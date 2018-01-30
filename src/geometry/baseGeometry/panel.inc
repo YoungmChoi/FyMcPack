@@ -11,6 +11,7 @@
         integer, dimension(nNode), intent(in)        :: nodeLabel
         real(rp),dimension(3), optional :: vec
         integer :: i
+        real(rp),dimension(3) :: pos
 
         if (nNode.le.1) then
             write(*,*) "    [ERROR] setPanel : nNode should be larger than 1."
@@ -19,6 +20,7 @@
 
         this%nNode_ = nNode
         allocate( this%nodeLabel_(nNode) )
+        allocate( this%node_(nNode) )
 
         this%vtkCellType_ = 7
         if (nNode.eq.2) this%vtkCellType_ = 3
@@ -27,9 +29,154 @@
 
         do i = 1, nNode
             this%nodeLabel_(i) = nodeLabel(i)
+            pos = nodes(this%nodeLabel_(i))%vec()
+            Call this%node_(i)%set(i, pos(1), pos(2), pos(3) )
         enddo
 
         Call correctPanel(this, nodes, vec)
+
+    End Subroutine
+
+    Subroutine computeConstantPanelGaussPoint(this, nGaussPoint)
+        Class(typPanel), intent(inout)  :: this
+        integer                         :: nGaussPoint
+        !! Local Variables
+        real(rp),dimension(nGaussPoint) :: xi, eta
+        Real(RP),dimension(nGaussPoint) :: Nx1, Nx2, Ny1, Ny2
+        Real(RP),dimension(nGaussPoint) :: W1, W2
+        integer :: i, j, k
+        real(rp), dimension(3) :: x, x1, x2, x3, x4
+
+
+        if (this%nNode_.eq.2) then
+
+            if (nGaussPoint.eq.1) then
+                xi  = gaussXi1
+                W1  = gaussW1
+            else if (nGaussPoint.eq.2) then
+                xi  = gaussXi2
+                W1  = gaussW2
+            else if (nGaussPoint.eq.3) then
+                xi  = gaussXi3
+                W1  = gaussW3
+            else if (nGaussPoint.eq.4) then
+                xi  = gaussXi4
+                W1  = gaussW4
+            else if (nGaussPoint.eq.5) then
+                xi  = gaussXi5
+                W1  = gaussW5
+            else
+                write(*,*) " "
+                write(*,*) "    [ERROR] computeConstantPanelGaussPoint(typPanel, nGaussPoint)"
+                write(*,*) "        nGaussPoint should be less than ", nGaussMax
+                write(*,*) "        given Gauss Point : ", nGaussPoint
+                write(*,*) " "
+                stop
+            end if
+
+            do i = 1, nGaussPoint
+                Nx1(i) =  1.0_RP - xi(i)
+                Nx2(i) =  1.0_RP + xi(i)
+            enddo
+
+            x1 = this%node_(1)%vec()
+            x2 = this%node_(2)%vec()
+
+            if (allocated(this%gPoint)) deallocate(this%gPoint)
+            if (allocated(this%gWeight)) deallocate(this%gWeight)
+
+            this%nGauss = nGaussPoint
+            allocate(this%gPoint(this%nGauss), this%gWeight(this%nGauss))
+
+            k = 0
+            do i = 1, nGaussPoint
+                k = k + 1
+                x = Nx1(i) * x1 + Nx2(i) * x2
+                x = x / 2.0_RP
+                Call this%gPoint(k)%set(k, x(1), x(2), x(3))
+                this%gWeight(k) = W1(i)
+            enddo
+
+        else if (this%nNode_.eq.4) then
+
+            if (nGaussPoint.eq.1) then
+                xi  = gaussXi1
+                eta = gaussXi1
+                W1  = gaussW1
+                W2  = gaussW1
+            else if (nGaussPoint.eq.2) then
+                xi  = gaussXi2
+                eta = gaussXi2
+                W1  = gaussW2
+                W2  = gaussW2
+            else if (nGaussPoint.eq.3) then
+                xi  = gaussXi3
+                eta = gaussXi3
+                W1  = gaussW3
+                W2  = gaussW3
+            else if (nGaussPoint.eq.4) then
+                xi  = gaussXi4
+                eta = gaussXi4
+                W1  = gaussW4
+                W2  = gaussW4
+            else if (nGaussPoint.eq.5) then
+                xi  = gaussXi5
+                eta = gaussXi5
+                W1  = gaussW5
+                W2  = gaussW5
+            else
+                write(*,*) " "
+                write(*,*) "    [ERROR] computeConstantPanelGaussPoint(typPanel, nGaussPoint)"
+                write(*,*) "        nGaussPoint should be less than ", nGaussMax
+                write(*,*) "        given Gauss Point : ", nGaussPoint
+                write(*,*) " "
+                stop
+            end if
+
+            do i = 1, nGaussPoint
+                Nx1(i) =  1.0_RP - xi(i)
+                Nx2(i) =  1.0_RP + xi(i)
+
+                Ny1(i) =  1.0_RP - eta(i)
+                Ny2(i) =  1.0_RP + eta(i)
+            enddo
+
+            x1 = this%node_(1)%vec()
+            x2 = this%node_(2)%vec()
+            x3 = this%node_(3)%vec()
+            x4 = this%node_(4)%vec()
+
+            if (allocated(this%gPoint)) deallocate(this%gPoint)
+            if (allocated(this%gWeight)) deallocate(this%gWeight)
+            this%nGauss = nGaussPoint * nGaussPoint
+            allocate(this%gPoint(this%nGauss), this%gWeight(this%nGauss))
+
+            k = 0
+            do j = 1, nGaussPoint
+                do i = 1, nGaussPoint
+                    k = k + 1
+
+                    x = Nx1(i) * Ny1(j) * x1 &
+                      + Nx2(i) * Ny1(j) * x2 &
+                      + Nx2(i) * Ny2(j) * x3 &
+                      + Nx1(i) * Ny2(j) * x4
+
+                     x = x / 4.0_RP
+
+                     Call this%gPoint(k)%set(k, x(1), x(2), x(3))
+
+                    this%gWeight(k) = W1(i) * W2(j)
+
+                enddo
+            enddo
+
+        else
+            write(*,*) " "
+            write(*,*) "    [ERROR] computeConstantPanelGaussPoint(typPanel, nGaussPoint)"
+            write(*,*) "        Quadrilateral or Line Panel are only Implemented"
+            write(*,*) " "
+            stop
+        end if
 
     End Subroutine
 
@@ -38,12 +185,14 @@
         Class(typPanel), intent(inout)  :: this
         type(typPoint), intent(in)      :: nodes(:)
         real(rp),dimension(3), optional :: vec
+        !! ----------------------------------------------------------------
         integer  :: i
         integer  :: iNode, jNode, kNode
         Real(RP) :: xc, yc, zc
         Real(RP),dimension(3) :: vec1, vec2, vec3, nVec, sumNvec
         Real(RP) :: magV, area
         Real(RP) :: sumArea
+        Real(RP),dimension(3) :: pos
 
         xc = 0.0_RP; yc = 0.0_RP; zc = 0.0_RP
 
@@ -51,6 +200,9 @@
             xc = xc + nodes( this%nodeLabel_(i) )%x()
             yc = yc + nodes( this%nodeLabel_(i) )%y()
             zc = zc + nodes( this%nodeLabel_(i) )%z()
+
+            pos = nodes(this%nodeLabel_(i))%vec()
+            Call this%node_(i)%set(i, pos(1), pos(2), pos(3) )
         enddo
 
         !! Panel Center

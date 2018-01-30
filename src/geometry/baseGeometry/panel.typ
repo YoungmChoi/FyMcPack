@@ -30,6 +30,9 @@
         !! Node Label Array
         integer, allocatable :: nodeLabel_(:)
 
+        !! Node Label Array
+        type(typPoint), public, allocatable :: node_(:)
+
         !! vtk write Surface Type
         integer  :: vtkCellType_
 
@@ -60,6 +63,9 @@
 
         !! Compute Area and Normal with given nodes without changing without nodes
         procedure, pass, public :: correct => correctPanel
+
+        !! Compute Area and Normal with given nodes without changing without nodes
+        procedure, pass, public :: correctGaussPoint => computeConstantPanelGaussPoint
 
         !! Return Number of Panel Node
         procedure, pass, public :: nNode => nNodePanel
