@@ -9,19 +9,19 @@ Subroutine getGauss1Coordinates(nGaussP, N1, N2, W)
     !! x - directional
     if (nGaussP.eq.1) then
         xi = gaussXi1
-        W = gaussW1
+        W = gaussW1 / 2.0_RP
     else if (nGaussP.eq.2) then
         xi = gaussXi2
-        W = gaussW2
+        W = gaussW2 / 2.0_RP
     else if (nGaussP.eq.3) then
         xi = gaussXi3
-        W = gaussW3
+        W = gaussW3 / 2.0_RP
     else if (nGaussP.eq.4) then
         xi = gaussXi4
-        W = gaussW4
+        W = gaussW4 / 2.0_RP
     else if (nGaussP.eq.5) then
         xi = gaussXi5
-        W = gaussW5
+        W = gaussW5 / 2.0_RP
     else
         write(*,*) " "
         write(*,*) "    [ERROR] getGauss1Coordinates()"

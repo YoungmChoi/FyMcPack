@@ -75,11 +75,7 @@
 
 !! Type Procedures -------------------------------------------------- !!
 
-    Interface initialize
-
-        Module Procedure :: initializeSurfMesh
-
-    End Interface
+    public :: initializeSurfMesh
 
 !! ------------------------------------------------------------------ !!
 !!  Derived Class

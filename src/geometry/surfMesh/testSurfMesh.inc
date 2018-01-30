@@ -22,7 +22,7 @@ Subroutine testSurfMeshDict
 
     Call fileDict%initialize("./", "surfMesh", ".dict")
 
-    Call initialize(surfMesh, fileDict%subDict("surfaceMesh"))
+    Call initializeSurfMesh(surfMesh, fileDict%subDict("surfaceMesh"))
 
 End Subroutine
 

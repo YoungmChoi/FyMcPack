@@ -245,21 +245,11 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
     !! - Reset Surface Mesh
     do nPanel = 1, this%nPanel
         Call this%panel(nPanel)%correct(this%node)
-        ! if (present(nGaussPoint)) then
-        !     Call this%panel(nPanel)%correctGaussPoint(nGaussPoint)
-        ! else
-        !     Call this%panel(nPanel)%correctGaussPoint(1)
-        ! end if
     Enddo
 
     !! - Reset Surface Mesh
     do nPanel = 1, this%nLine
         Call this%linePanel(nPanel)%correct(this%lineNode, (/0.0_RP, 0.0_RP, 1.0_RP/))
-        ! if (present(nGaussPoint)) then
-        !     Call this%linePanel(nPanel)%correctGaussPoint(nGaussPoint)
-        ! else
-        !     Call this%linePanel(nPanel)%correctGaussPoint(1)
-        ! end if
     Enddo
 
     if (this%rZ_.eq. 1) then
@@ -292,7 +282,6 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
 
     do iz = 1, nZ - 1
         z2     = z1 + dz
-        z      = (z1 + z2) / 2.0_RP
         do ir = 1, nR
             nPanel = nPanel + 1
 
@@ -301,13 +290,13 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
 
             theta = (theta1 + theta2) / 2.0_RP
 
-            x = radius * dcos(theta)
-            y = radius * dsin(theta)
-
+            x = radius * dcos(theta) + this%x0_
+            y = radius * dsin(theta) + this%y0_
+            z = (z1 + z2) / 2.0_RP + this%z0_
             !! Panel Normal, Center, Area
 
             this%panel(nPanel)%area = this%radius_ * dtheta * dz
-            Call this%panel(nPanel)%center%move(x, y, z)
+            Call this%panel(nPanel)%center%move(x, y, z )
             Call this%panel(nPanel)%normal%move( -dcos(theta), -dsin(theta), 0.0_RP)
 
             !! Gauss Point
@@ -323,10 +312,10 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
 
                     x = radius * dcos(theta) + this%x0_
                     y = radius * dsin(theta) + this%y0_
-                    z = Ny1(j) * z1 + Ny2(j) * z2 + this%z0_
+                    z = (Ny1(j) * z1 + Ny2(j) * z2) + this%z0_
 
                     Call this%panel(nPanel)%gPoint(k)%set(k, x, y, z)
-                    this%panel(nPanel)%gWeight(k) = W1(i) * W2(j)
+                    this%panel(nPanel)%gWeight(k) = W1(i) * W2(j) * this%panel(nPanel)%area
 
                 enddo
             enddo
@@ -374,7 +363,7 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
             y = radius * dsin(theta) + this%y0_
 
             Call this%linePanel(nPanel)%gPoint(k)%set(k, x, y, z)
-            this%linePanel(nPanel)%gWeight(k) = W1(i)
+            this%linePanel(nPanel)%gWeight(k) = W1(i) * this%linePanel(nPanel)%area
 
         enddo
 

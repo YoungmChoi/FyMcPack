@@ -66,7 +66,7 @@
                 k = k + 1
                 x = Nx1(i) * x1 + Nx2(i) * x2
                 Call this%gPoint(k)%set(k, x(1), x(2), x(3))
-                this%gWeight(k) = W1(i)
+                this%gWeight(k) = W1(i) * this%area
             enddo
 
         else if (this%nNode_.eq.4) then
@@ -95,7 +95,7 @@
 
                      Call this%gPoint(k)%set(k, x(1), x(2), x(3))
 
-                    this%gWeight(k) = W1(i) * W2(j)
+                    this%gWeight(k) = W1(i) * W2(j) * this%area
 
                 enddo
             enddo
