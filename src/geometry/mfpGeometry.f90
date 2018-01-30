@@ -50,6 +50,8 @@ Contains
 
 !!  Procedure Files ------------------------------------------------- !!
 
+    Include "auxiliary/getGaussCoordinate.inc"
+
     Include "baseGeometry/point.inc"
 
     Include "baseGeometry/panel.inc"

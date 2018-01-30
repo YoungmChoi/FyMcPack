@@ -25,10 +25,7 @@
     private
 
         !! Point Index
-        integer  :: idx_
-
-        !! Point Position
-        real(RP) :: x_, y_, z_
+        integer  :: idx_        
 
         !! Pointer Vector
         real(RP), dimension(3) :: vec_

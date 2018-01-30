@@ -50,34 +50,7 @@
 
         if (this%nNode_.eq.2) then
 
-            if (nGaussPoint.eq.1) then
-                xi  = gaussXi1
-                W1  = gaussW1
-            else if (nGaussPoint.eq.2) then
-                xi  = gaussXi2
-                W1  = gaussW2
-            else if (nGaussPoint.eq.3) then
-                xi  = gaussXi3
-                W1  = gaussW3
-            else if (nGaussPoint.eq.4) then
-                xi  = gaussXi4
-                W1  = gaussW4
-            else if (nGaussPoint.eq.5) then
-                xi  = gaussXi5
-                W1  = gaussW5
-            else
-                write(*,*) " "
-                write(*,*) "    [ERROR] computeConstantPanelGaussPoint(typPanel, nGaussPoint)"
-                write(*,*) "        nGaussPoint should be less than ", nGaussMax
-                write(*,*) "        given Gauss Point : ", nGaussPoint
-                write(*,*) " "
-                stop
-            end if
-
-            do i = 1, nGaussPoint
-                Nx1(i) =  1.0_RP - xi(i)
-                Nx2(i) =  1.0_RP + xi(i)
-            enddo
+            Call  getGauss1Coordinates(nGaussPoint, Nx1, Nx2, W1)
 
             x1 = this%node_(1)%vec()
             x2 = this%node_(2)%vec()
@@ -92,54 +65,13 @@
             do i = 1, nGaussPoint
                 k = k + 1
                 x = Nx1(i) * x1 + Nx2(i) * x2
-                x = x / 2.0_RP
                 Call this%gPoint(k)%set(k, x(1), x(2), x(3))
                 this%gWeight(k) = W1(i)
             enddo
 
         else if (this%nNode_.eq.4) then
 
-            if (nGaussPoint.eq.1) then
-                xi  = gaussXi1
-                eta = gaussXi1
-                W1  = gaussW1
-                W2  = gaussW1
-            else if (nGaussPoint.eq.2) then
-                xi  = gaussXi2
-                eta = gaussXi2
-                W1  = gaussW2
-                W2  = gaussW2
-            else if (nGaussPoint.eq.3) then
-                xi  = gaussXi3
-                eta = gaussXi3
-                W1  = gaussW3
-                W2  = gaussW3
-            else if (nGaussPoint.eq.4) then
-                xi  = gaussXi4
-                eta = gaussXi4
-                W1  = gaussW4
-                W2  = gaussW4
-            else if (nGaussPoint.eq.5) then
-                xi  = gaussXi5
-                eta = gaussXi5
-                W1  = gaussW5
-                W2  = gaussW5
-            else
-                write(*,*) " "
-                write(*,*) "    [ERROR] computeConstantPanelGaussPoint(typPanel, nGaussPoint)"
-                write(*,*) "        nGaussPoint should be less than ", nGaussMax
-                write(*,*) "        given Gauss Point : ", nGaussPoint
-                write(*,*) " "
-                stop
-            end if
-
-            do i = 1, nGaussPoint
-                Nx1(i) =  1.0_RP - xi(i)
-                Nx2(i) =  1.0_RP + xi(i)
-
-                Ny1(i) =  1.0_RP - eta(i)
-                Ny2(i) =  1.0_RP + eta(i)
-            enddo
+            Call  getGauss2Coordinates(nGaussPoint, nGaussPoint, Nx1, Nx2, Ny1, Ny2, W1, W2)
 
             x1 = this%node_(1)%vec()
             x2 = this%node_(2)%vec()
@@ -160,8 +92,6 @@
                       + Nx2(i) * Ny1(j) * x2 &
                       + Nx2(i) * Ny2(j) * x3 &
                       + Nx1(i) * Ny2(j) * x4
-
-                     x = x / 4.0_RP
 
                      Call this%gPoint(k)%set(k, x(1), x(2), x(3))
 
@@ -358,9 +288,15 @@
         Implicit None
         Class(typPanel), intent(inout) :: this
         if (allocated(this%nodeLabel_)) deallocate(this%nodeLabel_)
+
         this%nNode_       = 0
         this%vtkCellType_ = -1
         this%area         = 0.0_RP
+        this%nGauss       = 0
+
+        if (allocated(this%gPoint)) deallocate(this%gPoint)
+        if (allocated(this%gWeight)) deallocate(this%gWeight)
+
     End Subroutine
 
     Subroutine finalPanel(this)
