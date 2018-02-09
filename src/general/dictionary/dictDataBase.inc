@@ -108,7 +108,7 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
 
     Call initializeDictDataBase(dictName, dictID, parentDictID)
 
-    nLine = sizeof(charArray) / sizeof(tmpLine)
+    nLine = size(charArray)
 
     isKeyActive   = .FALSE.
     isDictActive  = .FALSE.

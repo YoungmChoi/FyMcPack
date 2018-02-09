@@ -150,7 +150,7 @@ subroutine parseCharChar(str, delims, args, nargs)
 
     strsav=str
     call compactChar(str)
-    na = sizeof(str) / sizeof(dummy)
+    na = len(str)
     if (na.le.0) then
         nargs = 0
         return
@@ -589,7 +589,7 @@ function isWord(intArray) result(value)
     Integer,dimension(:) :: intArray
     logical :: value
     integer :: nInt, ii
-    nInt = sizeof(intArray)/sizeof(1)
+    nInt = size(intArray)
     value = .FALSE.
     if (nInt.ge.1) then
         value = .TRUE.
@@ -641,7 +641,7 @@ Logical Function isAllTrue(logicalArray)
     integer :: nn, i
     logical :: dummy
     isAllTrue = .TRUE.
-    nn = sizeof(logicalArray) / sizeof(dummy)
+    nn = size(logicalArray)
     if (nn.eq.0) then
         isAllTrue = .FALSE.
         return
@@ -677,7 +677,7 @@ Subroutine readMakeCharArrayFromCharArray(charArray, subCharArray, nLine, charSt
     if (allocated(subCharArray)) deallocate(subCharArray)
     if (allocated(tmpCharArray)) deallocate(tmpCharArray)
 
-    nTotalLine = sizeof(CharArray) / sizeof(tmpLine)
+    nTotalLine = size(CharArray)
 
     subSetOption = .FALSE.
     iSub = 0

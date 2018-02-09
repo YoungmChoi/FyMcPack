@@ -21,7 +21,7 @@ Subroutine addSaveArray(nSaveArray, &
     logical, allocatable                 :: tmpSaveNumFlagArr(:)
     integer, allocatable                 :: tmpSaveFlagArr(:)
 
-    nTmpArray = sizeof(tmpNumFlagArray)/sizeof(.TRUE.)
+    nTmpArray = size(tmpNumFlagArray)
 
     if (nSaveArray.eq.0) then
         if (allocated(saveStrArray))     deallocate(saveStrArray)

@@ -6,7 +6,7 @@ Subroutine setDataArrayIntArray(this, array)
 
     Call this%destroy()
 
-    nData = sizeof(array) / sizeof(1)
+    nData = size(array)
 
     if (nData.le.0) then
         write(*,*) "    [WARNING] setDataArrayReal(array), the number of array should be larger than 0."
@@ -55,7 +55,7 @@ Subroutine setDataArrayRealArray(this, array)
 
     Call this%destroy()
 
-    nData = sizeof(array) / sizeof(1.0_RP)
+    nData = size(array)
 
     if (nData.le.0) then
         write(*,*) "    [WARNING] setDataArrayReal(array), the number of array should be larger than 0."
@@ -159,7 +159,7 @@ Subroutine setDataArrayCharArray(this, array, isTrim)
     Call this%destroy()
 
     dummyChar = "a"
-    nData = sizeof(array) / sizeof(dummyChar)
+    nData = size(array)
 
     if (nData.le.0) then
         write(*,*) "    [WARNING] setDataArrayChar(array), the number of array should be larger than 0."
@@ -196,7 +196,7 @@ Subroutine setDataArrayLogicalArray(this, array)
     logical, dimension(:), intent(in)     :: array
     integer:: nData
     Call this%destroy()
-    nData = sizeof(array) /sizeof(.FALSE.)
+    nData = size(array)
     if (nData.le.0) then
         write(*,*) "    [WARNING] setDataArrayLogical(nData, array), the number of array should be larger than 0."
         return

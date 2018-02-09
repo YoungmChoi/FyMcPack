@@ -18,24 +18,34 @@ export EXES=$(PROJECT_DIR)main
 export FC=gfortran
 #export FC=ifort
 
+CFLAG1 = -fPIC -O2 -g
+
+ifeq ($(FC),ifort)
+	CFLAG2     = -CB
+	FLAGMODOUT = -module
+else
+	CFLAG2     = -fbounds-check
+	FLAGMODOUT = -J
+endif
+
 # C flags
-export CFLAGS = -fPIC -O2 -g -fbounds-check
+CFLAGS = $(CFLAG1) $(CFLAG2)
 
 # linking flags
-export LDFLAGS = -fPIC -O2 -c
+LDFLAGS = -fPIC -O2 -c
 
 #Flag for writing modules in $(OBJ) -J : write .mod file in given dir
-export FLAGMOD1= -J $(DIR_LIB)
+FLAGMOD1= $(FLAGMODOUT) $(DIR_LIB)
 
 #Flag for reading modules in $(OBJ) - I : include .mod file in given dir
-export FLAGMOD2= -I $(DIR_LIB)
+FLAGMOD2= -I $(DIR_LIB)
 
-export OPTSC0  = -c $(FLAGMOD1)
-export OPTSL0  = $(FLAGMOD2)
-export MKDIRS  = $(DIR_OBJ) $(DIR_LIB)
+OPTSC0  = -c $(FLAGMOD1)
+OPTSL0  = $(FLAGMOD2)
+MKDIRS  = $(DIR_OBJ) $(DIR_LIB)
 
-export OPTSC = $(OPTSC0)
-export OPTSL = $(OPTSL0)
+OPTSC = $(OPTSC0)
+OPTSL = $(OPTSL0)
 
 export COMPILE_OBJECT_RULE=@$(FC) $(CFLAGS) $(OPTSC)
 
