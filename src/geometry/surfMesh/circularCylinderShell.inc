@@ -189,13 +189,14 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
         do ir = 1, nR
             nPanel = nPanel + 1
             nodeLabel(1) = (iz - 1) * nR + ir
-            nodeLabel(2) = (iz - 1) * nR + ir + 1
+            nodeLabel(2) = iz       * nR + ir
             nodeLabel(3) = iz       * nR + ir + 1
-            nodeLabel(4) = iz       * nR + ir
+            nodeLabel(4) = (iz - 1) * nR + ir + 1
 
             if (ir.eq.nR) then
-                nodeLabel(2) = (iz-1) * nR + 1
+                ! nodeLabel(2) = (iz-1) * nR + 1
                 nodeLabel(3) = iz * nR + 1
+                nodeLabel(4) = (iz-1) * nR + 1
             end if
             Call this%panel(nPanel)%set(4, this%node, nodeLabel)
         enddo
@@ -245,129 +246,139 @@ Subroutine initializeCirularCylinderShellMesh(this, radius, height, &
     !! - Reset Surface Mesh
     do nPanel = 1, this%nPanel
         Call this%panel(nPanel)%correct(this%node)
+        if (present(nGaussPoint)) then
+            Call this%panel(nPanel)%correctGaussPoint(nGaussPoint)
+        else
+            Call this%panel(nPanel)%correctGaussPoint(1)
+        end if
     Enddo
 
     !! - Reset Surface Mesh
     do nPanel = 1, this%nLine
         Call this%linePanel(nPanel)%correct(this%lineNode, (/0.0_RP, 0.0_RP, 1.0_RP/))
+        if (present(nGaussPoint)) then
+            Call this%linePanel(nPanel)%correctGaussPoint(nGaussPoint)
+        else
+            Call this%linePanel(nPanel)%correctGaussPoint(1)
+        end if
     Enddo
 
-    if (this%rZ_.eq. 1) then
-        dz = height  / (nZ - 1.0_RP)
-    else
-        dz = height  * (this%rZ_ - 1.0_RP) / (this%rZ_**(nZ-1) - 1.0_RP)
-    end if
-
-    if (present(nGaussPoint)) then
-        if (nGaussPoint.ge.1) then
-            nGauss = nGaussPoint
-        else
-            nGauss = 1
-        end if
-    else
-        nGauss = 1
-    end if
-
-    allocate(Nx1(nGauss), Nx2(nGauss), &
-             Ny1(nGauss), Ny2(nGauss), &
-             W1(nGauss),  W2(nGauss)   )
-
-    Call getGauss2Coordinates(nGauss, nGauss, Nx1, Nx2, Ny1, Ny2, W1, W2)
-
-    !! Set Panel Information with analytic value
-    nPanel = 0
-
-    z1      = -0.5_RP * height
-    dtheta  = 2.0_RP * pi / nR
-
-    do iz = 1, nZ - 1
-        z2     = z1 + dz
-        do ir = 1, nR
-            nPanel = nPanel + 1
-
-            theta1 = dtheta * (ir - 1.0_RP)
-            theta2 = dtheta * real(ir, rp)
-
-            theta = (theta1 + theta2) / 2.0_RP
-
-            x = radius * dcos(theta) + this%x0_
-            y = radius * dsin(theta) + this%y0_
-            z = (z1 + z2) / 2.0_RP + this%z0_
-            !! Panel Normal, Center, Area
-
-            this%panel(nPanel)%area = this%radius_ * dtheta * dz
-            Call this%panel(nPanel)%center%move(x, y, z )
-            Call this%panel(nPanel)%normal%move( -dcos(theta), -dsin(theta), 0.0_RP)
-
-            !! Gauss Point
-            this%panel(nPanel)%nGauss = nGauss * nGauss
-            allocate( this%panel(nPanel)%gPoint(this%panel(nPanel)%nGauss) )
-            allocate( this%panel(nPanel)%gWeight(this%panel(nPanel)%nGauss) )
-
-            k = 0
-            do i = 1, nGauss
-                theta = Nx1(i) * theta1 + Nx2(i) * theta2
-                do j = 1, nGauss
-                    k = k + 1
-
-                    x = radius * dcos(theta) + this%x0_
-                    y = radius * dsin(theta) + this%y0_
-                    z = (Ny1(j) * z1 + Ny2(j) * z2) + this%z0_
-
-                    Call this%panel(nPanel)%gPoint(k)%set(k, x, y, z)
-                    this%panel(nPanel)%gWeight(k) = W1(i) * W2(j) * this%panel(nPanel)%area
-
-                enddo
-            enddo
-
-        enddo
-        z1 = z2
-        dz = dz * this%rZ_
-    enddo
-
-    !! Set Line Panel Gauss point
-
-    !! Set Panel Information with analytic value
-    z = 0.5_RP * height + this%z0_
-    dtheta  = 2.0_RP * pi / this%nLine
-
-    nPanel = 0
-    do ir = 1, this%nLine
-        nPanel = nPanel + 1
-
-        theta1 = dtheta * (ir - 1.0_RP)
-        theta2 = dtheta * real(ir, rp)
-
-        theta = (theta1 + theta2) / 2.0_RP
-
-        x = radius * dcos(theta)
-        y = radius * dsin(theta)
-
-        !! Line Panel Normal, Center, Area
-        this%linePanel(nPanel)%area = this%radius_ * dtheta
-        Call this%linePanel(nPanel)%center%move(x, y, z)
-        Call this%linePanel(nPanel)%normal%move( -dcos(theta), -dsin(theta), 0.0_RP)
-
-        !! Gauss Point
-        this%linePanel(nPanel)%nGauss = nGauss
-        allocate( this%linePanel(nPanel)%gPoint(this%linePanel(nPanel)%nGauss) )
-        allocate( this%linePanel(nPanel)%gWeight(this%linePanel(nPanel)%nGauss) )
-
-        k = 0
-        do i = 1, nGauss
-            k = k + 1
-
-            theta = Nx1(i) * theta1 + Nx2(i) * theta2
-
-            x = radius * dcos(theta) + this%x0_
-            y = radius * dsin(theta) + this%y0_
-
-            Call this%linePanel(nPanel)%gPoint(k)%set(k, x, y, z)
-            this%linePanel(nPanel)%gWeight(k) = W1(i) * this%linePanel(nPanel)%area
-
-        enddo
-
-    enddo
+    ! if (this%rZ_.eq. 1) then
+    !     dz = height  / (nZ - 1.0_RP)
+    ! else
+    !     dz = height  * (this%rZ_ - 1.0_RP) / (this%rZ_**(nZ-1) - 1.0_RP)
+    ! end if
+    !
+    ! if (present(nGaussPoint)) then
+    !     if (nGaussPoint.ge.1) then
+    !         nGauss = nGaussPoint
+    !     else
+    !         nGauss = 1
+    !     end if
+    ! else
+    !     nGauss = 1
+    ! end if
+    !
+    ! allocate(Nx1(nGauss), Nx2(nGauss), &
+    !          Ny1(nGauss), Ny2(nGauss), &
+    !          W1(nGauss),  W2(nGauss)   )
+    !
+    ! Call getGauss2Coordinates(nGauss, nGauss, Nx1, Nx2, Ny1, Ny2, W1, W2)
+    !
+    ! !! Set Panel Information with analytic value
+    ! nPanel = 0
+    !
+    ! z1      = -0.5_RP * height
+    ! dtheta  = 2.0_RP * pi / nR
+    !
+    ! do iz = 1, nZ - 1
+    !     z2     = z1 + dz
+    !     do ir = 1, nR
+    !         nPanel = nPanel + 1
+    !
+    !         theta1 = dtheta * (ir - 1.0_RP)
+    !         theta2 = dtheta * real(ir, rp)
+    !
+    !         theta = (theta1 + theta2) / 2.0_RP
+    !
+    !         x = radius * dcos(theta) + this%x0_
+    !         y = radius * dsin(theta) + this%y0_
+    !         z = (z1 + z2) / 2.0_RP + this%z0_
+    !         !! Panel Normal, Center, Area
+    !
+    !         this%panel(nPanel)%area = this%radius_ * dtheta * dz
+    !         Call this%panel(nPanel)%center%move(x, y, z )
+    !         Call this%panel(nPanel)%normal%move( -dcos(theta), -dsin(theta), 0.0_RP)
+    !
+    !         !! Gauss Point
+    !         this%panel(nPanel)%nGauss = nGauss * nGauss
+    !         allocate( this%panel(nPanel)%gPoint(this%panel(nPanel)%nGauss) )
+    !         allocate( this%panel(nPanel)%gWeight(this%panel(nPanel)%nGauss) )
+    !
+    !         k = 0
+    !         do i = 1, nGauss
+    !             theta = Nx1(i) * theta1 + Nx2(i) * theta2
+    !             do j = 1, nGauss
+    !                 k = k + 1
+    !
+    !                 x = radius * dcos(theta) + this%x0_
+    !                 y = radius * dsin(theta) + this%y0_
+    !                 z = (Ny1(j) * z1 + Ny2(j) * z2) + this%z0_
+    !
+    !                 Call this%panel(nPanel)%gPoint(k)%set(k, x, y, z)
+    !                 this%panel(nPanel)%gWeight(k) = W1(i) * W2(j) * this%panel(nPanel)%area
+    !
+    !             enddo
+    !         enddo
+    !
+    !     enddo
+    !     z1 = z2
+    !     dz = dz * this%rZ_
+    ! enddo
+    !
+    ! !! Set Line Panel Gauss point
+    !
+    ! !! Set Panel Information with analytic value
+    ! z = 0.5_RP * height + this%z0_
+    ! dtheta  = 2.0_RP * pi / this%nLine
+    !
+    ! nPanel = 0
+    ! do ir = 1, this%nLine
+    !     nPanel = nPanel + 1
+    !
+    !     theta1 = dtheta * (ir - 1.0_RP)
+    !     theta2 = dtheta * real(ir, rp)
+    !
+    !     theta = (theta1 + theta2) / 2.0_RP
+    !
+    !     x = radius * dcos(theta)
+    !     y = radius * dsin(theta)
+    !
+    !     !! Line Panel Normal, Center, Area
+    !     this%linePanel(nPanel)%area = this%radius_ * dtheta
+    !     Call this%linePanel(nPanel)%center%move(x, y, z)
+    !     Call this%linePanel(nPanel)%normal%move( -dcos(theta), -dsin(theta), 0.0_RP)
+    !
+    !     !! Gauss Point
+    !     this%linePanel(nPanel)%nGauss = nGauss
+    !     allocate( this%linePanel(nPanel)%gPoint(this%linePanel(nPanel)%nGauss) )
+    !     allocate( this%linePanel(nPanel)%gWeight(this%linePanel(nPanel)%nGauss) )
+    !
+    !     k = 0
+    !     do i = 1, nGauss
+    !         k = k + 1
+    !
+    !         theta = Nx1(i) * theta1 + Nx2(i) * theta2
+    !
+    !         x = radius * dcos(theta) + this%x0_
+    !         y = radius * dsin(theta) + this%y0_
+    !
+    !         Call this%linePanel(nPanel)%gPoint(k)%set(k, x, y, z)
+    !         this%linePanel(nPanel)%gWeight(k) = W1(i) * this%linePanel(nPanel)%area
+    !
+    !     enddo
+    !
+    ! enddo
 
 
     if (allocated(Nx1)) deallocate(Nx1)
