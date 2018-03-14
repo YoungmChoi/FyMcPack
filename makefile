@@ -1,8 +1,8 @@
 #!/usr/bin/make
 ### Compiler and Compiling Rule ------------------------------------------------
 
-#export FC=gfortran
-export FC=ifort
+export FC=gfortran
+#export FC=ifort
 
 include config.mk
 

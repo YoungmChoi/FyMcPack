@@ -5,7 +5,7 @@ PROJECT_DIR=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 EXES = main
 
 ### Compiler -------------------------------------------------------------------
-# FC      = ifort
+#FC      = ifort
 FC      = gfortran
 
 FLAGMOD1= $(DIR_OBJ)

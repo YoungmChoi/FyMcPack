@@ -12,7 +12,7 @@
 
             ! Call testString()
 
-            ! Call testDictionary
+            Call testDictionary
 
             ! Call testSLTable()
 
@@ -23,6 +23,6 @@
 
         !!... Test Geometry
 
-            Call testSurfMesh()
+            ! Call testSurfMesh()
 
     End Program

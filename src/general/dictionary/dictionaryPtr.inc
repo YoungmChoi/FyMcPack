@@ -349,3 +349,131 @@ Function getDictLogicalArrayOrDefault(this, key, defaultValue) result(value)
     end if
 
 End Function
+
+Subroutine setDictReal(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Real, intent(in)                     :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictRealRP(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Real(RP), intent(in)                 :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictDble(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Double Precision, intent(in)                 :: value
+    Call this%ptrDict%sLTable%push(key, real(value,rp))
+End Subroutine
+
+Subroutine setDictRealArray(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Real, dimension(:), intent(in)       :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictRealRPArray(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Real(RP), dimension(:), intent(in)   :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictDbleArray(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Double Precision, dimension(:), intent(in) :: value
+    Call this%ptrDict%sLTable%push(key, real(value,rp))
+End Subroutine
+
+Subroutine setDictInt(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Integer, intent(in)                     :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictIntArray(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    Integer, dimension(:), intent(in)       :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictChar(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    character(len=*), intent(in)         :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictCharArray(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    character(len=CHAR_LEN),dimension(:), intent(in)         :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictLogical(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    logical, intent(in)          :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictLogicalArray(this, key, value)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*),intent(in)          :: key
+    logical, dimension(:), intent(in)     :: value
+    Call this%ptrDict%sLTable%push(key, value)
+End Subroutine
+
+Subroutine setDictDict(this, subDict)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Type(typDictionaryPtr), intent(in)   :: subDict
+
+    if (subDict%ptrDict%dictID.ge.1) then
+        Call this%ptrDict%subDictTable%push(subDict%ptrDict%dictName, subDict%ptrDict%dictID)
+    else
+        write(*,*) "    [ERROR] setSubDict(subDict), subDict is not stored."
+        write(*,*) "        subDict Name : ", subDict%ptrDict%dictName
+        write(*,*) "        subDict ID   : ", subDict%ptrDict%dictID
+        stop
+    end if
+
+End Subroutine
+
+Subroutine addDictDict(this, from)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Type(typDictionaryPtr), intent(in)   :: from
+
+    if (from%ptrDict%dictID.ge.1) then
+        Call this%ptrDict%addDict(from%ptrDict)
+    else
+        write(*,*) "    [ERROR] addDict(fromDict), fromDict is not stored."
+        write(*,*) "        fromDict Name : ", from%ptrDict%dictName
+        write(*,*) "        fromDict ID   : ", from%ptrDict%dictID
+        stop
+    end if
+
+End Subroutine
