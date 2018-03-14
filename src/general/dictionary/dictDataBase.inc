@@ -104,11 +104,15 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
     character(len = CHAR_LEN), allocatable :: tmpKeyCArg(:)
     real(RP), allocatable                  :: tmpKeyRArg(:)
     integer :: tmpParentDictID
+
+    Character(len=fileLineLength),dimension(size(charArray)) :: removedCharArray
     !! Subroutine Start -------------------------------------------------------
 
     Call initializeDictDataBase(dictName, dictID, parentDictID)
 
-    nLine = size(charArray)
+    Call removeCommentBlock(charArray, removedCharArray)
+
+    nLine = size(removedCharArray)
 
     isKeyActive   = .FALSE.
     isDictActive  = .FALSE.
@@ -120,7 +124,7 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
         if (iLine.gt.nLine) exit
 
         !! Get Line
-        tmpLine = charArray(iLine)
+        tmpLine = removedCharArray(iLine)
 
         !! Modify Line to be separated correctly
         modLine = insertSpaceSpecialCharacter(tmpLine)

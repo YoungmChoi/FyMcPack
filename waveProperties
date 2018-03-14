@@ -1,0 +1,101 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.5                                   |
+|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      environmentalProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#inputMode overwrite;
+
+// A list of the relaxation zones in the simulation. The parameters are given
+// in <name>Coeffs below. Default is empty: relaxationNames ();
+// waveVelocity and waveAlpha read wave definition from <patchName>Coeffs
+
+seaLevel 0.0;
+
+//relaxationNames ( leftOutlet rightOutlet );
+
+commontInput
+{
+    refPosition (0 0 0);                  // default: (0 0 0), ref. position for wave train
+    startTime     0;                      // default: 0, start time for wave generator (noWaves before startTime)
+    refTime       0;                      // default: 0, ref. time for wave generation (t = t - refTime)
+    iterateDistance yes;                  // default: yes, improve the accuracy of the compute phase fraction
+    U0          (0 0 0);                  // forward speed (def. in the global csys)
+    rampTime     0.0;                     // Ramp time at wave start-up
+    phi 0;                                // default: 0, constant phase for offset wave position
+    depth       1000.0;                   // Water depth
+}
+
+myRadiationcase
+{
+    $commontInput
+
+    waveType      lewis2DRadiation;
+    geometryType  twoParameter;
+
+    twoParameter
+    {
+        H0              1.0;        // ration half breadth to draft
+        sigma           0.95;        // sectional area coefficient
+        halfbreadth     1.0;        // half breadth
+    }
+
+    oscillating2Dmotion
+    {
+        amplitude      (0.025345518985745  0.00 0.0);     // Sway [m] Heave [m] Roll[deg]
+        omega          7.0;                  // Moving Frequency
+        phase          (0.0  0.0  0.0);      // Phase
+    }
+
+    centerOfBody     (0 0 0);  // center of lewis form in CFD domain
+    bodyAxis         (1 0 0);  // body axis (roll axis)
+    nPole  3;                 // Number of Multipole Extension
+}
+
+mycase
+{
+    $myRadiationcase
+}
+
+// Wave field initialization
+initCoeffs
+{
+    $mycase
+}
+
+// wave proporties for side patch
+leftOutletCoeffs
+{
+    $mycase
+    waveType noWaves;
+    relaxationZone
+    {
+        zoneName    leftOutletZone;
+        origin      (0  -5.402717705 0);
+        orientation (0  1 0);
+    }
+}
+
+rightOutletCoeffs
+{
+    $mycase
+    waveType noWaves;
+    relaxationZone
+    {
+        zoneName    rightOutletZone;
+        origin      (0 5.402717705 0);
+        orientation (0 -1 0);
+    }
+}
+
+// ************************************************************************* //

@@ -54,7 +54,7 @@ Subroutine testDictPointer()
 
     Call dictPtr%set("ghfe", (/1, 2, 5/))
 
-    Call dictPtr%set("ghfeada", "abd")    
+    Call dictPtr%set("ghfeada", "abd")
 
     Call dictPtr%addDict(dict2)
 
@@ -75,14 +75,18 @@ Subroutine testDictPointer()
     !
     ! Call dictDB(2)%SLTable%print()
 
-    ! fileDir  = "./"
-    ! fileName = "testDict"
-    ! fileExt  = ""
-    !
-    ! Call dictPtr%initialize(fileDir, fileName, fileExt)
-    !
-    ! Call dictPtr%print()
-    !
+    fileDir  = "./"
+    fileName = "waveProperties"
+    fileExt  = ""
+
+    Call dictPtr%initialize(fileDir, fileName, fileExt)
+
+    Call dictPtr%print()
+
+    subDict = dictPtr%subDict("myRadiationcase")
+
+    Call subDict%print()
+
     ! write(*,*) dictPtr%getReal("varR")
     !
     ! ! realArr = dictPtr%getRealArray("arrR")

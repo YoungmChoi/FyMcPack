@@ -826,6 +826,98 @@ Subroutine readMakeCharArrayFromFile(fileIndex, subCharArray, nLine, charStart, 
 
 End Subroutine
 
+Subroutine removeCommentBlock(charArray, removedCharArray)
+    Implicit None
+    Character(len=fileLineLength),dimension(:), intent(in)  :: charArray
+    Character(len=fileLineLength),dimension(:), intent(out) :: removedCharArray
+    Character(len=fileLineLength) :: tmpLine, ttmpLine
+    integer :: nLine, iLine
+    logical :: isBlockStart, isBlockEnd, isBlock
+    integer :: iBlock, jBlock
+
+    isBlock = .FALSE.
+
+    nLine = size(charArray)
+    do iLine = 1, nLine
+        tmpLine = charArray(iLine)
+
+        if (isBlock.EQV..FALSE.) then
+            Call findCommentBlockStart(tmpLine, isBlockStart, iBlock)
+            if (isBlockStart) then
+                isBlock = .TRUE.
+            end if
+        end if
+
+        if (isBlock.EQV..TRUE.) then
+            Call findCommentBlockEnd(tmpLine, isBlockEnd, jBlock)
+            if (isBlockEnd) then
+                isBlock     = .FALSE.
+            end if
+        end if
+
+        if (isBlock) then
+            if (isBlockStart.EQV..TRUE.) then
+                ttmpLine = tmpLine
+                tmpLine  = ""
+                tmpLine  = ttmpLine(1:iBlock)
+            else
+                tmpLine  = ""
+            end if
+            isBlockStart = .FALSE.
+        end if
+
+        if ((isBlock.EQV..FALSE.).AND.(isBlockEnd.EQV..TRUE.)) then
+            ttmpLine = tmpLine
+            tmpLine  = ""
+            tmpLine  = ttmpLine(jBlock:)
+            isBlockEnd = .FALSE.
+        end if
+
+        removedCharArray(iLine) = ""
+        removedCharArray(iLine) = tmpLine
+
+    enddo
+
+End Subroutine
+
+Subroutine findCommentBlockStart(charLine, isBlockStart, nLineBlock)
+    Implicit None
+    character(len=*),intent(in) :: charLine
+    logical, intent(out) :: isBlockStart
+    integer, intent(out) :: nLineBlock
+    integer :: ichar
+    nLineBlock     = len(charLine)
+    isBlockStart = .FALSE.
+    if (nLineBlock.ge.2) then
+        do ichar =1, nLineBlock-1
+            if (charLine(ichar:ichar+1).EQ.commentBlockStart) then
+                nLineBlock = ichar - 1
+                isBlockStart = .TRUE.
+                exit
+            endif
+        enddo
+    end if
+end subroutine
+
+Subroutine findCommentBlockEnd(charLine, isBlockEnd, nLineBlock)
+    Implicit None
+    character(len=*),intent(in) :: charLine
+    logical, intent(out) :: isBlockEnd
+    integer, intent(out) :: nLineBlock
+    integer :: ichar
+    nLineBlock = len(charLine)
+    isBlockEnd = .FALSE.
+    if (nLineBlock.ge.2) then
+        do ichar =1, nLineBlock-1
+            if (charLine(ichar:ichar+1).EQ.commentBlockEnd) then
+                nLineBlock = ichar + 1
+                isBlockEnd = .TRUE.
+                exit
+            endif
+        enddo
+    end if
+end subroutine
+
 function stringHeader(this) result(value)
     class(typString), intent(in) :: this
     integer                      :: value
