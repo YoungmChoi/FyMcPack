@@ -352,7 +352,7 @@ End Function
 
 Subroutine setDictReal(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Real, intent(in)                     :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -360,7 +360,7 @@ End Subroutine
 
 Subroutine setDictRealRP(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Real(RP), intent(in)                 :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -368,7 +368,7 @@ End Subroutine
 
 Subroutine setDictDble(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Double Precision, intent(in)                 :: value
     Call this%ptrDict%sLTable%push(key, real(value,rp))
@@ -376,7 +376,7 @@ End Subroutine
 
 Subroutine setDictRealArray(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Real, dimension(:), intent(in)       :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -384,7 +384,7 @@ End Subroutine
 
 Subroutine setDictRealRPArray(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Real(RP), dimension(:), intent(in)   :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -392,7 +392,7 @@ End Subroutine
 
 Subroutine setDictDbleArray(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Double Precision, dimension(:), intent(in) :: value
     Call this%ptrDict%sLTable%push(key, real(value,rp))
@@ -400,7 +400,7 @@ End Subroutine
 
 Subroutine setDictInt(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Integer, intent(in)                     :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -408,7 +408,7 @@ End Subroutine
 
 Subroutine setDictIntArray(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     Integer, dimension(:), intent(in)       :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -416,7 +416,7 @@ End Subroutine
 
 Subroutine setDictChar(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     character(len=*), intent(in)         :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -424,7 +424,7 @@ End Subroutine
 
 Subroutine setDictCharArray(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     character(len=CHAR_LEN),dimension(:), intent(in)         :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -432,7 +432,7 @@ End Subroutine
 
 Subroutine setDictLogical(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     logical, intent(in)          :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -440,7 +440,7 @@ End Subroutine
 
 Subroutine setDictLogicalArray(this, key, value)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Character(len=*),intent(in)          :: key
     logical, dimension(:), intent(in)     :: value
     Call this%ptrDict%sLTable%push(key, value)
@@ -448,7 +448,7 @@ End Subroutine
 
 Subroutine setDictDict(this, subDict)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Type(typDictionaryPtr), intent(in)   :: subDict
 
     if (subDict%ptrDict%dictID.ge.1) then
@@ -464,7 +464,7 @@ End Subroutine
 
 Subroutine addDictDict(this, from)
     Implicit None
-    Class(typDictionaryPtr), intent(in)  :: this
+    Class(typDictionaryPtr), intent(inout)  :: this
     Type(typDictionaryPtr), intent(in)   :: from
 
     if (from%ptrDict%dictID.ge.1) then
@@ -475,5 +475,168 @@ Subroutine addDictDict(this, from)
         write(*,*) "        fromDict ID   : ", from%ptrDict%dictID
         stop
     end if
+
+End Subroutine
+
+Subroutine writeDict2File(this, filePath)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Character(len=*), intent(in)         :: filePath
+    Type(typFileIO)                      :: writeFileIO
+
+    Character(len=CHAR_LEN)                :: fileDir
+    Character(len=CHAR_LEN)                :: fileName
+    Character(len=CHAR_LEN)                :: fileExt
+
+    integer :: fid
+
+    Call separateFilePath(filePath, fileDir, fileName, fileExt)
+
+    if (trim(fileName).eq."") then
+        write(*,*) "    [ERROR] writeDictFile(filePath)"
+        write(*,*) "        No file name is given : "
+        write(*,*) "        file path : ", trim(filePath)
+        write(*,*) "        file dir  : ", trim(fileDir)
+        write(*,*) "        file name : ", trim(fileName)
+        write(*,*) "        file ext  : ", trim(fileExt)
+        stop
+    end if
+
+    if (len(trim(fileName)).ge.1) then
+    if (fileName(1:1).eq.".") then
+        write(*,*) "    [ERROR] writeDictFile(filePath)"
+        write(*,*) "        Wrong file name is given : "
+        write(*,*) "        file path : ", trim(filePath)
+        write(*,*) "        file dir  : ", trim(fileDir)
+        write(*,*) "        file name : ", trim(fileName)
+        write(*,*) "        file ext  : ", trim(fileExt)
+        stop
+    end if
+    end if
+
+    Call writeFileIO%initialize(fileDir, fileName, fileExt, "replace")
+
+    fid = writeFileIO%fileIndex
+
+    Call writeDictFileHeader(fid)
+
+    Call writeDict2FileChar(this, fid, "")
+
+    Call writeFileIO%destroy()
+
+End Subroutine
+
+Recursive Subroutine writeDict2FileChar(this, fileIndex, blankTab)
+    Implicit None
+    Class(typDictionaryPtr), intent(in)  :: this
+    Integer, intent(in) :: fileIndex
+    Character(len=*), intent(in) :: blankTab
+    !----------------------------------------------------------------
+    character(len=CHAR_LEN)               :: key, dictName
+    Type(typDataArray)                    :: tmpDataArray
+    integer                               :: ikey, idict, ivar
+    character(len=CHAR_LEN)               :: tmpChar
+
+    write(fileIndex,1000) ""
+
+    !!... Write Data
+    do ikey = 1, this%ptrDict%sLTable%nKey
+        if (this%ptrDict%sLTable%isKeyActive(ikey)) then
+
+            key          = this%ptrDict%sLTable%getKey(ikey)
+            tmpDataArray = this%ptrDict%sLTable%getDataArray(ikey)
+
+            if (tmpDataArray%nData.ge.1) then
+                if (tmpDataArray%nData.eq.1) then
+                    if (tmpDataArray%isNum) then
+                        if (tmpDataArray%isInt) then
+                            write(fileIndex, 1002) blankTab, trim(key), tmpDataArray%arrI(1),";"
+                            write(fileIndex,1000) ""
+                        else
+                            write(fileIndex, 1001) blankTab, trim(key), tmpDataArray%arrR(1),";"
+                            write(fileIndex,1000) ""
+                        end if
+                    else if (tmpDataArray%isStr) then
+                        tmpChar = tmpDataArray%arrS(1)%get()
+                        write(fileIndex, 1003) blankTab, trim(key), trim(tmpChar),";"
+                        write(fileIndex,1000) ""
+                        tmpChar = ""
+                    else if (tmpDataArray%isLog) then
+                        if (tmpDataArray%arrL(1).EQV..TRUE.) then
+                            write(fileIndex, 1003) blankTab, trim(key), "TRUE",";"
+                        else
+                            write(fileIndex, 1003) blankTab, trim(key), "FALSE",";"
+                        end if
+                        write(fileIndex,1000) ""
+                    end if
+                else
+
+                    write(fileIndex, 1000) blankTab, trim(key)
+                    write(fileIndex, 1000) blankTab, "("
+
+                    if (tmpDataArray%isNum) then
+                        if (tmpDataArray%isInt) then
+                            do ivar = 1, tmpDataArray%nData
+                                write(fileIndex, 1012) blankTab, tmpDataArray%arrI(ivar)
+                            enddo
+                        else
+                            do ivar = 1, tmpDataArray%nData
+                                write(fileIndex, 1011) blankTab, tmpDataArray%arrR(ivar)
+                            enddo
+                        endif
+
+                    else if (tmpDataArray%isStr) then
+                        do ivar = 1, tmpDataArray%nData
+                            tmpChar = tmpDataArray%arrS(ivar)%get()
+                            write(fileIndex, 1000) blankTab, trim(tmpChar)
+                            tmpChar = ""
+                        enddo
+
+                    else if (tmpDataArray%isLog) then
+                        do ivar = 1, tmpDataArray%nData
+                            if (tmpDataArray%arrL(ivar).EQV..TRUE.) then
+                                write(fileIndex, 1000) blankTab, "TRUE"
+                            else
+                                write(fileIndex, 1000) blankTab, "FALSE"
+                            end if
+                        enddo
+
+                    end if
+
+                    write(fileIndex, 1000) blankTab, ");"
+                    write(fileIndex,1000) ""
+
+                end if
+
+            end if
+
+        end if
+    enddo
+
+    !!... Write SubDictionary
+
+
+    !!... Write Data
+    do ikey = 1, this%ptrDict%subDictTable%nKey
+        if (this%ptrDict%subDictTable%isKeyActive(ikey)) then
+            dictName = this%ptrDict%subDictTable%getKey(ikey)
+
+            write(fileIndex, 1000) blankTab, trim(dictName)
+            write(fileIndex, 1000) blankTab, "{"
+            Call writeDict2FileChar(this%subDict(dictName), fileIndex,blankTab//"    ")
+            write(fileIndex, 1000) blankTab, "}"
+            write(fileIndex,1000) ""
+
+        end if
+    enddo
+
+    1000 format(a,a)
+    1001 format(a,a,5x,f16.8,a)
+    1002 format(a,a,5x,i10,a)
+    1003 format(a,a,5x,a,a)
+
+    1011 format(a,f16.8)
+    1012 format(a,i10)
+
 
 End Subroutine

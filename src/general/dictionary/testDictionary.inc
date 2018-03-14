@@ -87,6 +87,8 @@ Subroutine testDictPointer()
 
     Call subDict%print()
 
+    Call dictPtr%writeFile("./dict.dict")
+
     ! write(*,*) dictPtr%getReal("varR")
     !
     ! ! realArr = dictPtr%getRealArray("arrR")

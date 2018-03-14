@@ -264,6 +264,33 @@ subroutine pushSLTableLogicalArray(this, key, value)
 
 end subroutine
 
+function getSLTableDataArray(this, keyIndex, isStop) result(dataArray)
+    Implicit None
+    class(typSLookUpTable), intent(in)    :: this
+    integer, intent(in)                   :: keyIndex
+    type(typDataArray)                    :: dataArray
+    logical,optional                      :: isStop
+    logical                               :: isExist
+    logical :: isErr
+
+    isErr = .TRUE.
+    if (present(isStop)) isErr = isStop
+
+    if (keyIndex.le.this%nKey) then
+        if (this%isKeyActive(keyIndex)) then
+            dataArray = this%dataArray(keyIndex)
+        else
+            write(*,*) "No key exist for given key Index. keyIndex : ", keyIndex
+            if (isErr) stop
+        end if
+    else
+        write(*,*) "Given keyIndex is over than sLookTable Size. keyIndex : ", keyIndex
+        if (isErr) stop
+    end if
+
+end function
+
+
 function getSLTableKey(this, keyIndex, isStop) result(key)
     Implicit None
     class(typSLookUpTable), intent(in)    :: this

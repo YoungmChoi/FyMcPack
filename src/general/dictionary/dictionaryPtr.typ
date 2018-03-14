@@ -139,4 +139,6 @@ Contains
                       setChar, setCharArray, &
                       setLogical, setLogicalArray
 
+    procedure, pass, public :: writeFile => writeDict2File
+
 End Type
