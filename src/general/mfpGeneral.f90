@@ -39,6 +39,8 @@ private
 
     integer, parameter :: fileLineLength = 2000
 
+    integer, parameter :: DEFAULT_TAB_SIZE = 4
+
 !!  Header Files ---------------------------------------------------- !!
 
     Include "string/stringI.typ"

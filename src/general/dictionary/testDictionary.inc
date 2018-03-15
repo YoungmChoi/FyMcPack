@@ -76,16 +76,12 @@ Subroutine testDictPointer()
     ! Call dictDB(2)%SLTable%print()
 
     fileDir  = "./"
-    fileName = "waveProperties"
+    fileName = "dict"
     fileExt  = ""
 
     Call dictPtr%initialize(fileDir, fileName, fileExt)
 
     Call dictPtr%print()
-
-    subDict = dictPtr%subDict("myRadiationcase")
-
-    Call subDict%print()
 
     Call dictPtr%writeFile("./dict.dict")
 

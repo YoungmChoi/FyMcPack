@@ -988,6 +988,12 @@ Subroutine separateFilePath(filePath, fileDir, fileName, fileExt)
 
 End Subroutine
 
+Function blankSpace(nSpace) result(val)
+    integer, intent(in) :: nSpace
+    Character(len=nSpace) :: val
+    val(1:nSpace) = " "
+End Function
+
 Subroutine writeDictFileHeader(fileIndex)
     Implicit None
     Integer, intent(in) :: fileIndex

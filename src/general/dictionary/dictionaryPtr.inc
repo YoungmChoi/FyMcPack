@@ -52,26 +52,55 @@ Subroutine initDict_File(this, fileDir, fileName, ext)
 
 End Subroutine
 
-Subroutine printDictionary(this)
+Recursive subroutine printDictionary(this, tabSize)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this
+    integer :: idict
+    integer,optional :: tabSize
+    integer :: iblk
+    Character(CHAR_LEN) :: subDictName
 
-    write(*,*) " "
-    write(*,*) "---------------------------------------------------------------"
-    write(*,*) " "
-    write(*,*) " Dictionary : ", trim(this%ptrDict%dictName)
-    write(*,*) " "
-    write(*,*) "---------------------------------------------------------------"
-    write(*,*) " "
-    write(*,*) "  - Data : "
-    write(*,*) " "
-    Call this%ptrDict%sLTable%print()
-    write(*,*) " "
-    write(*,*) "  - Sub Dictionary : "
-    write(*,*) " "
-    Call this%ptrDict%subDictTable%print()
-    write(*,*) " "
-    write(*,*) "---------------------------------------------------------------"
+    if (present(tabSize)) then
+        iblk = tabSize
+    else
+        iblk = 0
+    end if
+
+    !!... Write Dictionary Name
+    write(*,"(a,a)") blankSpace(iblk), trim(this%ptrDict%dictName)
+
+    write(*,"(a,a)") blankSpace(iblk),"{"
+    !!... Write Dictionary Member Data
+    Call this%ptrDict%sLTable%print(iblk + DEFAULT_TAB_SIZE)
+
+    !!... Write SubDictionary
+    do idict = 1, this%ptrDict%subDictTable%nKey
+        if ( this%ptrDict%subDictTable%isKeyActive(idict) ) then
+            write(*,"(a)")
+            subDictName = this%ptrDict%subDictTable%keys(idict)%get()
+            Call printDictionary( this%subDict(subDictName), iblk + DEFAULT_TAB_SIZE)
+            subDictName = ""
+        end if
+    enddo
+
+    write(*,"(a,a)") blankSpace(iblk),"}"
+
+    ! write(*,*) " "
+    ! write(*,*) "---------------------------------------------------------------"
+    ! write(*,*) " "
+    ! write(*,*) " Dictionary : ", trim(this%ptrDict%dictName)
+    ! write(*,*) " "
+    ! write(*,*) "---------------------------------------------------------------"
+    ! write(*,*) " "
+    ! write(*,*) "  - Data : "
+    ! write(*,*) " "
+    ! Call this%ptrDict%sLTable%print()
+    ! write(*,*) " "
+    ! write(*,*) "  - Sub Dictionary : "
+    ! write(*,*) " "
+    ! Call this%ptrDict%subDictTable%print()
+    ! write(*,*) " "
+    ! write(*,*) "---------------------------------------------------------------"
 
 End Subroutine
 
