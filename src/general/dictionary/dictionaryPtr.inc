@@ -117,6 +117,88 @@ function subDictionaryPtr(this, subDictName) result(ptrSubDict)
 
 end function
 
+function nData_Dict(this) result (nVar)
+    Class(typDictionaryPtr), intent(in)  :: this
+    integer                              :: nVar, ikey
+    nVar = 0
+    !!... Write Data
+    do ikey = 1, this%ptrDict%sLTable%nKey
+        if (this%ptrDict%sLTable%isKeyActive(ikey)) then
+            nVar = nVar + 1
+        end if
+    enddo
+end function
+
+function nSubDict_Dict(this) result (nVar)
+    Class(typDictionaryPtr), intent(in)  :: this
+    integer                              :: nVar, ikey
+    nVar = 0
+    !!... Write Data
+    do ikey = 1, this%ptrDict%subDictTable%nKey
+        if (this%ptrDict%subDictTable%isKeyActive(ikey)) then
+            nVar = nVar + 1
+        end if
+    enddo
+end function
+
+function getDictKey(this, ivar) result(value)
+    Class(typDictionaryPtr), intent(in)  :: this
+    integer, intent(in)                  :: ivar
+    Character(len=CHAR_LEN)              :: value
+    integer                              :: jkey, ikey
+    logical :: isFoundKey
+    value =""
+    isFoundKey = .FALSE.
+    jkey = 0
+    !!... Write Data
+    do ikey = 1, this%ptrDict%sLTable%nKey
+        if (this%ptrDict%sLTable%isKeyActive(ikey)) then
+            jkey = jkey + 1
+        end if
+        if (jkey.eq.ivar) then
+            value = this%ptrDict%sLTable%getKey(ivar)
+            isFoundKey = .TRUE.
+        end if
+    enddo
+
+    if ( .not.(isFoundKey) ) then
+        write(*,*) "    [ERROR] getDictKey::key is not found. Index Error"
+        write(*,*) "    ivar : ", ivar
+        write(*,*) "    nKey : ", this%ptrDict%subDictTable%nKey
+        stop
+    end if
+
+End Function
+
+function getDictSubDictName(this, ivar) result(value)
+    Class(typDictionaryPtr), intent(in)  :: this
+    integer, intent(in)                  :: ivar
+    Character(len=CHAR_LEN)              :: value
+    integer                              :: jkey, ikey
+    logical :: isFoundKey
+    value =""
+    isFoundKey = .FALSE.
+    jkey = 0
+    !!... Write Data
+    do ikey = 1, this%ptrDict%subDictTable%nKey
+        if (this%ptrDict%subDictTable%isKeyActive(ikey)) then
+            jkey = jkey + 1
+        end if
+        if (jkey.eq.ivar) then
+            value = this%ptrDict%subDictTable%getKey(ivar)
+            isFoundKey = .TRUE.
+        end if
+    enddo
+
+    if ( .not.(isFoundKey) ) then
+        write(*,*) "    [ERROR] getDictKey::key is not found. Index Error"
+        write(*,*) "    ivar : ", ivar
+        write(*,*) "    nKey : ", this%ptrDict%subDictTable%nKey
+        stop
+    end if
+
+End Function
+
 Function getDictReal(this, key, ivar) result(value)
     Implicit None
     Class(typDictionaryPtr), intent(in)  :: this

@@ -311,8 +311,7 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
                     !! If Keyword exist, but end not exist
                     else
 
-                        !! If Argument is larger than 2.
-                        if (nArgValid.ge.2) then
+                        if (nArgValid.ge.3) then
 
                             if (isWord(scFlag(2:2))) then
 
@@ -332,8 +331,16 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
                                     Call writeErrorFileDict("Wrong Format. ; should be located after the value.", tmpLine)
                                 end if
 
-                            !! Dictionary Start
-                            elseif (scFlag(2).eq.1101) then
+                            else
+                                Call writeErrorFileDict("Wrong contents in array. ", tmpLine)
+                            end if
+
+                        end if
+
+                        !! If Argument is larger than 2.
+                        if (nArgValid.ge.2) then
+
+                            if (scFlag(2).eq.1101) then
 
                                 Call writeErrorFileDict(" Dictionary character { should be separated.", tmpLine)
 

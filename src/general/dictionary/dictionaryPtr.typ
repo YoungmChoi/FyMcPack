@@ -39,6 +39,18 @@ Contains
     !!... Return SubDictionary
     procedure, pass, public :: subDict => subDictionaryPtr
 
+    !!... nData
+    procedure, pass, public :: nData => nData_Dict
+
+    !!... nSubDict
+    procedure, pass, public :: nSubDict => nSubDict_Dict
+
+    !!... Get Key Name
+    procedure, pass, public :: getKey => getDictKey
+
+    !!... Get Sub Dict Name
+    procedure, pass, public :: getSubDictName => getDictSubDictName
+
     !!... Get Real Values
     procedure, pass, public :: getReal => getDictReal
 
