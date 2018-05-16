@@ -438,11 +438,12 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
     integer,allocatable, intent(inout)                        :: scFlag(:)
     logical, intent(out) :: iflag
     !----------------------------------------------------
-    integer :: i, io
+    integer :: i, ioInt,ioRealF, ioRealE
     character(len=CHAR_LEN), allocatable :: args(:)
     character(len=CHAR_LEN)              :: dummyChar
     type(typString)                      :: dummyStr
-    real(RP) :: dummyReal
+    real(RP) :: dummyRealF, dummyRealE, dummyReal
+    Integer  :: dummyInt
 
     integer :: ii
 
@@ -478,10 +479,20 @@ subroutine splitLine(str, nArg, cArg, scArg, lcArg, iArg, rArg, numFlag, scFlag,
             cArg(i)  = dummyStr%get()
             scArg(i) = dummyStr%getLower()
             lcArg(i) = dummyStr%getUpper()
-            read(dummyChar, *, iostat = io) dummyReal
+
+            read(dummyChar, "(i15)", iostat = ioInt) dummyInt
+            read(dummyChar, "(f20.10)", iostat = ioRealF) dummyReal
+
+            if (ioInt.eq.0)  then
+                dummyReal = dummyInt
+                numFlag(i) = .TRUE.
+            else if (ioRealF.eq.0)  then
+                dummyInt   = int(dummyReal)
+                numFlag(i) = .TRUE.
+            end if
+
             rArg(i) = dummyReal
-            iArg(i) = int(rArg(i))
-            if (io.eq.0) numFlag(i) = .TRUE.
+            iArg(i) = dummyInt
 
             scFlag(i) = testOneChar(dummyChar(1:1))
 
@@ -829,54 +840,164 @@ End Subroutine
 Subroutine removeCommentBlock(charArray, removedCharArray)
     Implicit None
     Character(len=fileLineLength),dimension(:), intent(in)  :: charArray
-    Character(len=fileLineLength),dimension(:), intent(out) :: removedCharArray
+    Character(len=fileLineLength),allocatable, intent(out) :: removedCharArray(:)
+
     Character(len=fileLineLength) :: tmpLine, ttmpLine
-    integer :: nLine, iLine
+    integer :: nLine, iLine, jLine, nChar
     logical :: isBlockStart, isBlockEnd, isBlock
-    integer :: iBlock, jBlock
+    integer :: iBlock, jBlock, ich, nch
+    logical :: isCommented
+
+    Character(len=fileLineLength),allocatable :: tmpCharArray(:)
 
     isBlock = .FALSE.
 
+    isBlockStart = .FALSE.
+    isBlockEnd   = .FALSE.
+
     nLine = size(charArray)
-    do iLine = 1, nLine
-        tmpLine = charArray(iLine)
 
-        if (isBlock.EQV..FALSE.) then
-            Call findCommentBlockStart(tmpLine, isBlockStart, iBlock)
-            if (isBlockStart) then
-                isBlock = .TRUE.
+    if (nLine.ge.1) then
+
+        if (allocated(removedCharArray)) deallocate(removedCharArray)
+        allocate(removedCharArray(nLine))
+
+        if (allocated(tmpCharArray)) deallocate(tmpCharArray)
+        allocate(tmpCharArray(nLine))
+
+        removedCharArray = ""
+
+        !! // Remove Comment Block First
+        do iLine = 1, nLine
+            tmpLine = charArray(iLine)
+            if (isBlock.EQV..FALSE.) then
+                Call findCommentBlockStart(tmpLine, isBlockStart, iBlock)
+                if (isBlockStart) isBlock = .TRUE.
             end if
-        end if
-
-        if (isBlock.EQV..TRUE.) then
-            Call findCommentBlockEnd(tmpLine, isBlockEnd, jBlock)
-            if (isBlockEnd) then
-                isBlock     = .FALSE.
+            if (isBlock.EQV..TRUE.) then
+                Call findCommentBlockEnd(tmpLine, isBlockEnd, jBlock)
+                if (isBlockEnd) isBlock     = .FALSE.
             end if
-        end if
+            if (isBlock) then
+                if (isBlockStart.EQV..TRUE.) then
+                    ttmpLine = tmpLine
+                    tmpLine  = ""
+                    if (iBlock.ge.1) then
+                        tmpLine  = ttmpLine(1:iBlock)
+                    endif
+                else
+                    tmpLine  = ""
+                end if
+                isBlockStart = .FALSE.
+            end if
 
-        if (isBlock) then
-            if (isBlockStart.EQV..TRUE.) then
+            if ((isBlock.EQV..FALSE.).AND.(isBlockEnd.EQV..TRUE.)) then
                 ttmpLine = tmpLine
                 tmpLine  = ""
-                tmpLine  = ttmpLine(1:iBlock)
-            else
-                tmpLine  = ""
+                if (jBlock.ge.1) then
+                    tmpLine  = ttmpLine(jBlock:)
+                end if
+                isBlockEnd = .FALSE.
             end if
-            isBlockStart = .FALSE.
-        end if
+            removedCharArray(iLine) = ""
+            removedCharArray(iLine) = tmpLine
+        enddo
 
-        if ((isBlock.EQV..FALSE.).AND.(isBlockEnd.EQV..TRUE.)) then
-            ttmpLine = tmpLine
-            tmpLine  = ""
-            tmpLine  = ttmpLine(jBlock:)
-            isBlockEnd = .FALSE.
-        end if
+        !! // comment treatement
+        do iLine = 1, nLine
+            tmpLine = removedCharArray(iLine)
+            nChar = len_trim(tmpLine)
+            if (nChar.ge.1) then
+                if (nChar.ge.2) then
+                    nch = nChar
+                    isCommented = .FALSE.
+                    do ich =1, nChar-1
+                        if ( isStringEqual(tmpLine(ich:ich+1),"//") ) then
+                            nch = ich-1
+                            isCommented = .TRUE.
+                            exit
+                        endif
+                    enddo
 
-        removedCharArray(iLine) = ""
-        removedCharArray(iLine) = tmpLine
+                    if (isCommented) then
+                        if (nch.ge.1) then
+                            removedCharArray(iLine) = ""
+                            removedCharArray(iLine) = tmpLine(1:nch)
+                        else
+                            removedCharArray(iLine) = ""
+                        endif
+                    else
+                        removedCharArray(iLine) = tmpLine
+                    endif
+                else
+                    removedCharArray(iLine) = tmpLine
+                end if
+            else
+                removedCharArray(iLine) = ""
+            end if
+        enddo
 
-    enddo
+        !! other comment treatement
+        do iLine = 1, nLine
+            tmpLine = trim(removedCharArray(iLine))
+            nChar = len_trim(tmpLine)
+
+            isCommented = .FALSE.
+            if (nChar.ge.1) then
+                nch = nChar
+                do ich =1, nChar
+                    if ( testOneCharCommment(tmpLine(ich:ich)) ) then
+                        nch = ich-1
+                        isCommented = .TRUE.
+                        exit
+                    endif
+                enddo
+
+                if (isCommented) then
+                    if (nch.ge.1) then
+                        removedCharArray(iLine) = ""
+                        removedCharArray(iLine) = tmpLine(1:nch)
+                    else
+                        removedCharArray(iLine) = ""
+                    endif
+                else
+                    removedCharArray(iLine) = tmpLine
+                endif
+
+            else
+                removedCharArray(iLine) = ""
+            end if
+
+        enddo
+
+        ! jline = 0
+        ! do iline = 1, nLine
+        !     tmpLine = trim(removedCharArray(iLine))
+        !     nChar   = len_trim(tmpLine)
+        !     if (nChar.ge.1) then
+        !         jLine = jLine + 1
+        !         tmpCharArray(jline) = ""
+        !         tmpCharArray(jline) = tmpLine
+        !     end if
+        !
+        !     write(*,*) iline, nChar, trim(tmpLine)
+        ! enddo
+        !
+        ! if (allocated(removedCharArray)) deallocate(removedCharArray)
+        ! allocate(removedCharArray(jline))
+        !
+        ! removedCharArray = tmpCharArray(1:jLine)
+        !
+        ! deallocate(tmpCharArray)
+        !
+        ! do iline = 1, jline
+        !     write(*,*) iline, trim(removedCharArray(iline))
+        ! enddo
+
+    else
+        write(*,*)  "   [ERROR] removeCommentBlock :: Empty CharArray."
+        stop
+    endif
 
 End Subroutine
 
@@ -910,7 +1031,7 @@ Subroutine findCommentBlockEnd(charLine, isBlockEnd, nLineBlock)
     if (nLineBlock.ge.2) then
         do ichar =1, nLineBlock-1
             if (charLine(ichar:ichar+1).EQ.commentBlockEnd) then
-                nLineBlock = ichar + 1
+                nLineBlock = ichar + 2
                 isBlockEnd = .TRUE.
                 exit
             endif

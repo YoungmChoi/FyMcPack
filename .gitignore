@@ -1,5 +1,7 @@
 main
 obj/*
 lib/*
+bin/*
+mod/*
 *.o
 *.vtk

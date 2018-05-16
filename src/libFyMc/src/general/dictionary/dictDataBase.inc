@@ -109,7 +109,7 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
     Real(RP), allocatable :: tempRealField(:)
     character(len=CHAR_LEN), allocatable :: tempCharField(:)
 
-    Character(len=fileLineLength),dimension(size(charArray)) :: removedCharArray
+    Character(len=fileLineLength),allocatable :: removedCharArray(:)
     !! Subroutine Start -------------------------------------------------------
 
     Call initializeDictDataBase(dictName, dictID, parentDictID)
@@ -340,6 +340,7 @@ Recursive Subroutine initDictDB_NameCharArray(dictName, charArray, dictID, paren
                         !! If Argument is larger than 2.
                         if (nArgValid.ge.2) then
 
+                            !! Dictionary Start
                             if (scFlag(2).eq.1101) then
 
                                 Call writeErrorFileDict(" Dictionary character { should be separated.", tmpLine)
