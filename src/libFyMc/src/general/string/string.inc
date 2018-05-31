@@ -16,7 +16,7 @@ Subroutine setString(this, string, isTrim)
     end if
 
     this%nStr_ = nChar
-    this%str_(1:this%nStr_) = string
+    this%str_ = string
 
     if (present(isTrim)) then
         if (isTrim) then
@@ -24,7 +24,7 @@ Subroutine setString(this, string, isTrim)
             Call compactChar(tmpString)
             nChar = len_trim(tmpString)
             this%nStr_ = nChar
-            this%str_(1:this%nStr_) = trim(string)
+            this%str_ = trim(string)
         end if
     end if
 
@@ -135,6 +135,7 @@ Subroutine clearString(this)
     class(typString), intent(inout) :: this
     this%str_=""
     this%nStr_=0
+    if (allocated(this%str_)) deallocate(this%str_)
 End Subroutine
 
 subroutine copyString(origin, target)

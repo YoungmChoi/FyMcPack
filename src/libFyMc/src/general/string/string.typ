@@ -1,10 +1,12 @@
+integer, parameter :: CK = selected_char_kind('DEFAULT') !< Default character kind.
+
 type, public :: typString
 
 private
 
     integer :: nStr_
 
-    Character(len=CHAR_LEN) :: str_
+    Character(kind=CK, len=:), allocatable :: str_
 
 Contains
 
