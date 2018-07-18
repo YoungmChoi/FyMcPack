@@ -5,3 +5,5 @@ bin/*
 mod/*
 *.o
 *.vtk
+build*
+surfaceMeshVTK*

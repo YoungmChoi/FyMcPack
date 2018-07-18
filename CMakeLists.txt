@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.6)
 set(PROJECT_NAME FyMc)                         #... Project Name
 set(COMPILE_LANGUAGE Fortran)
 set(CMAKE_Fortran_COMPILER gfortran)
+#set(CMAKE_Fortran_COMPILER ifort)
 ###-------------------------------------------------------------------------###
 
 project(${PROJECT_NAME} ${COMPILE_LANGUAGE})        # PROJECT NAME
