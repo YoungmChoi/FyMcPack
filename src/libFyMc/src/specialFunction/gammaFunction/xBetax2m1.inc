@@ -10,6 +10,9 @@ Function xBetaX2m1(x) result(y)
 !!  Programmed by Young-Myung Choi, Ecole Centrale de Nantes.
 !!                  Date : 2018-06-18
 !!
+!!  Absolute error is 1e-6. The coefficients of polynomial are optimized to
+!!  redouce computational time.
+!!
 !!-----------------------------------------------------------
     Implicit None
     Real(RP), intent(in)  :: x
@@ -63,7 +66,6 @@ Function xBetaX2m1(x) result(y)
         y = (x**3 + 20.0_RP * x*x + 138.0_RP * x + 360.0_RP) &
           / (x**4 + 20.0_RP * x**3 + 140.0_RP * x * x + 400.0_RP*x + 384.0_RP)
     else
-        !! Truncated at m=2 summation. YM. 2018-06-19 (epsilon < 1e-6)
         y = (x + 6.0_RP) / (x*x + 6.0_RP *x + 8.0_RP)
     end if
 !!-----------------------------------------------------------
