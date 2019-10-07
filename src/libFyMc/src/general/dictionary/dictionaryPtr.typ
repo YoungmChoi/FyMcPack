@@ -119,14 +119,14 @@ Contains
 
 	!!... Set real Values to be a dictionary member
 	procedure, pass, private :: setDictReal
-	procedure, pass, private :: setDictRealRP	
+	procedure, pass, private :: setDictRealRP
 
     !!... Set real array to be a dictionary member
 	procedure, pass, private :: setDictRealArray
 	procedure, pass, private :: setDictRealRPArray
 
 	procedure, pass, private :: setDictDble
-	procedure, pass, private :: setDictDbleArray    
+	procedure, pass, private :: setDictDbleArray
 
     !!... Set character to be a dictionary member
     procedure, pass, private :: setChar => setDictChar
@@ -148,21 +148,18 @@ Contains
 
 	!!... Set real Values to be a dictionary member
     generic :: setReal => setDictReal,     &
-                          setDictRealRP,   &
-                          setDictDble
+                          setDictRealRP ! , setDictDble
 
     !!... Set real array to be a dictionary member
     generic :: setRealArray => setDictRealArray,   &
-                               setDictRealRPArray, &
-                               setDictDbleArray
+                               setDictRealRPArray !, setDictDbleArray
 
     !!... Generic procedure
     generic :: set => setInt, setIntArray, &
                       setDictReal, setDictRealRP, &
 					  setDictRealArray, setDictRealRPArray, &
-					  setDictDble, setDictDbleArray, &
                       setChar, setCharArray, &
-                      setLogical, setLogicalArray
+                      setLogical, setLogicalArray !, setDictDble, setDictDbleArray
 
     procedure, pass, public :: writeFile => writeDict2File
 
