@@ -9,7 +9,7 @@ FYMCPACK_SOURCES
 add_library(fymc STATIC ${FYMCPACK_SOURCES})
 target_include_directories(fymc PRIVATE ${CMAKE_Fortran_MODULE_DIRECTORY})
 set_target_properties(fymc
-    PROPERTIES COMPILE_FLAGS "-cpp"
+    PROPERTIES COMPILE_FLAGS "-cpp -fPIC"
 )
 
 install(TARGETS fymc DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
