@@ -39,8 +39,9 @@ contains
     !!
     !! Call pushSLTableReal(this, "key", realArray )
     !!
-    procedure, pass, private :: pushSLTableReal, pushSLTableRealArray
-
+    procedure, pass, private :: pushSLTableReal
+	
+	procedure, pass, private :: pushSLTableRealArray
 
     !!... push real or real array to sLookUpTable
     !!
@@ -48,8 +49,9 @@ contains
     !!
     !! Call pushSLTableReal(this, "key", realArray_RP )
     !!
-    procedure, pass, private :: pushSLTableRealRP, pushSLTableRealRPArray
+    procedure, pass, private :: pushSLTableRealRP
 
+	procedure, pass, private :: pushSLTableRealRPArray
 
     !!... push integer or integer array to sLookUpTable
     !!
@@ -57,7 +59,9 @@ contains
     !!
     !! Call pushSLTableIntArray(this, "key", integerArray )
     !!
-    procedure, pass, private :: pushSLTableInt, pushSLTableIntArray
+    procedure, pass, private :: pushSLTableInt
+
+	procedure, pass, private :: pushSLTableIntArray
 
     !!... push character or character array to sLookUpTable
     !!
@@ -65,7 +69,9 @@ contains
     !!
     !! Call pushSLTableCharArray(this, "key", characterArray )
     !!
-    procedure, pass, private :: pushSLTableChar, pushSLTableCharArray
+    procedure, pass, private :: pushSLTableChar
+
+	procedure, pass, private :: pushSLTableCharArray
 
     !!... push logical or logical array to sLookUpTable
     !!
@@ -73,7 +79,9 @@ contains
     !!
     !! Call pushSLTableLogicalArray(this, "key", .logicalArray. )
     !!
-    procedure, pass, private :: pushSLTableLogical, pushSLTableLogicalArray
+    procedure, pass, private :: pushSLTableLogical
+
+	procedure, pass, private :: pushSLTableLogicalArray
 
     !!... Print LookUpTable Contents
     !!

@@ -117,15 +117,16 @@ Contains
     !!... Set integer array se be a dictionary member
     procedure, pass, private :: setIntArray => setDictIntArray
 
-    !!... Set real Values to be a dictionary member
-    procedure, pass, private :: setReal => setDictReal,     &
-                                           setDictRealRP,   &
-                                           setDictDble
+	!!... Set real Values to be a dictionary member
+	procedure, pass, private :: setDictReal
+	procedure, pass, private :: setDictRealRP	
 
     !!... Set real array to be a dictionary member
-    procedure, pass, private :: setRealArray => setDictRealArray,   &
-                                                setDictRealRPArray, &
-                                                setDictDbleArray
+	procedure, pass, private :: setDictRealArray
+	procedure, pass, private :: setDictRealRPArray
+
+	procedure, pass, private :: setDictDble
+	procedure, pass, private :: setDictDbleArray    
 
     !!... Set character to be a dictionary member
     procedure, pass, private :: setChar => setDictChar
@@ -145,9 +146,21 @@ Contains
     !!... Add dictionary
     procedure, pass, public  :: addDict => addDictDict
 
+	!!... Set real Values to be a dictionary member
+    generic :: setReal => setDictReal,     &
+                          setDictRealRP,   &
+                          setDictDble
+
+    !!... Set real array to be a dictionary member
+    generic :: setRealArray => setDictRealArray,   &
+                               setDictRealRPArray, &
+                               setDictDbleArray
+
     !!... Generic procedure
     generic :: set => setInt, setIntArray, &
-                      setReal, setRealArray, &
+                      setDictReal, setDictRealRP, &
+					  setDictRealArray, setDictRealRPArray, &
+					  setDictDble, setDictDbleArray, &
                       setChar, setCharArray, &
                       setLogical, setLogicalArray
 
